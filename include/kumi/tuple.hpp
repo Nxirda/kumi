@@ -87,6 +87,45 @@ namespace kumi
     {
       return _::get_leaf<I>(impl);
     }
+    
+    /// Compile time helper to find the index associated to a name if it exists
+    template<auto Name>
+    static consteval std::size_t get_name_index()
+    {
+      constexpr auto idx = []<std::size_t... N>(std::index_sequence<N...>)
+      {
+        bool checks[] = { ( []()
+          {
+            if constexpr( _::is_member_capture_v<Ts> ) return Name == Ts::name;
+            else return false;
+          }
+          ())...
+        };
+        
+        for(std::size_t i=0;i<sizeof...(Ts);++i)
+            if(checks[i]) return i;
+        
+        return sizeof...(Ts);
+      }(std::index_sequence_for<Ts...>{});
+
+      return idx;
+    };
+
+    /// @overload
+    template<auto Name>
+    constexpr decltype(auto) operator[](_::member_name<Name> const&)
+    {
+      constexpr auto idx = get_name_index<Name>();
+      return get<idx>(*this);
+    }
+
+    /// @overload
+    template<auto Name>
+    constexpr decltype(auto) operator[](_::member_name<Name> const&) const
+    {
+      constexpr auto idx = get_name_index<Name>();
+      return get<idx>(*this);
+    }
 
     //==============================================================================================
     //! @}
