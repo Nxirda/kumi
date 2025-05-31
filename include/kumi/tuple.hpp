@@ -14,6 +14,8 @@
 #include <kumi/detail/binder.hpp>
 #include <kumi/utils.hpp>
 
+#include <kumi/detail/member_capture.hpp>
+
 #include <iosfwd>
 #include <type_traits>
 
@@ -34,7 +36,7 @@ namespace kumi
   template<typename... Ts> struct tuple
   {
     using is_product_type = void;
-    using binder_t  = _::make_binder_t<std::make_integer_sequence<int,sizeof...(Ts)>, Ts...>;
+    using binder_t  = _::make_binder_t<std::make_integer_sequence<int,sizeof...(Ts)>, _::unwrap_member_capture_t<Ts>...>;
 
     static constexpr bool is_homogeneous = binder_t::is_homogeneous;
 
