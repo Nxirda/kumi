@@ -64,6 +64,17 @@ TTS_CASE("Check tuple::flatten behavior")
             (kumi::tuple {3.25f, 2., kumi::tuple {2., 1, short {55}}, short {55}, 'z'}));
 };
 
+TTS_CASE("Check tuple::flatten behavior on named tuples")
+{
+  using namespace kumi::literals;
+  TTS_EQUAL((kumi::flatten(kumi::tuple {"x"_m = 2., "y"_m = 1, "z"_m = short {55}})), (kumi::tuple {"x"_m = 2., "y"_m = 1, "z"_m = short {55}}));
+  TTS_EQUAL((kumi::flatten(kumi::tuple {"x"_m = 3.25f, "y"_m = kumi::tuple {"z"_m = 2., "t"_m = 1, "m"_m = short {55}}, "id"_m = 'z'})),
+            (kumi::tuple {"x"_m = 3.25f, "z"_m = 2., "t"_m = 1, "m"_m = short {55}, "id"_m = 'z'}));
+  TTS_EQUAL((kumi::flatten(kumi::tuple {
+                "x"_m = 3.25f, kumi::tuple {"y"_m = 2., kumi::tuple {2., "z"_m = 1, short {55}}, short {55}}, "t"_m = 'z'})),
+            (kumi::tuple {"x"_m = 3.25f, "y"_m = 2., kumi::tuple {2., "z"_m = 1, short {55}}, short {55}, "t"_m = 'z'}));
+};
+
 TTS_CASE("Check tuple::flatten constexpr behavior")
 {
   constexpr auto t0 = kumi::tuple {2., 1, short {55}};
@@ -76,6 +87,20 @@ TTS_CASE("Check tuple::flatten constexpr behavior")
   TTS_CONSTEXPR_EQUAL(kumi::flatten(t1), (kumi::tuple {3.25f, 2., 1, short {55}, 'z'}));
   TTS_CONSTEXPR_EQUAL(kumi::flatten(t2),
                       (kumi::tuple {3.25f, 2., kumi::tuple {2., 1, short {55}}, short {55}, 'z'}));
+};
+
+TTS_CASE("Check tuple::flatten constexpr behavior on named tuples")
+{
+  using namespace kumi::literals;
+  constexpr auto t0 = kumi::tuple {"x"_m = 2., 1, "y"_m = short {55}};
+  constexpr auto t1 = kumi::tuple {"x"_m = 3.25f, "z"_m = kumi::tuple {2., "t"_m = 1, short {55}}, "id"_m = 'z'};
+  constexpr auto t2 =
+      kumi::tuple {"x"_m = 3.25f, kumi::tuple {"y"_m = 2., kumi::tuple {2., "z"_m = 1, "t"_m = short {55}}, short {55}}, 'z'};
+
+  TTS_CONSTEXPR_EQUAL(kumi::flatten(t0), (kumi::tuple {"x"_m = 2., 1, "y"_m  = short {55}}));
+  TTS_CONSTEXPR_EQUAL(kumi::flatten(t1), (kumi::tuple {"x"_m = 3.25f, 2., "t"_m = 1, short {55}, "id"_m = 'z'}));
+  TTS_CONSTEXPR_EQUAL(kumi::flatten(t2),
+                      (kumi::tuple {"x"_m = 3.25f, "y"_m = 2., kumi::tuple {2., "z"_m = 1, "t"_m = short {55}}, short {55}, 'z'}));
 };
 
 TTS_CASE("Check tuple::flatten_all behavior")
@@ -92,6 +117,15 @@ TTS_CASE("Check tuple::flatten_all behavior")
   TTS_EQUAL((kumi::flatten_all(kumi::tuple {
                 3.25f, kumi::tuple {2., kumi::tuple{}, short {55}}, 'z'})),
             (kumi::tuple {3.25f, 2., short {55}, 'z'}));
+};
+
+TTS_CASE("Check tuple::flatten_all behavior on named tuples")
+{
+  using namespace kumi::literals;
+  TTS_EQUAL((kumi::flatten_all(kumi::tuple {"x"_m = 2., "y"_m = 1, "z"_m = short {55}})),
+            (kumi::tuple {"x"_m = 2., "y"_m = 1, "z"_m = short {55}}));
+  TTS_NOT_EQUAL((kumi::flatten_all(kumi::tuple {"x"_m = 3.25f, "y"_m = kumi::tuple {2., 1, short {55}}, "id"_m = 'z'})),
+            (kumi::tuple {3.25f, 2., 1, short {55}, 'z'}));
 };
 
 TTS_CASE("Check tuple::flatten_all + function behavior")

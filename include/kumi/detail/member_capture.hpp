@@ -39,13 +39,15 @@ namespace kumi::_
     template<himo::str ID, typename T>
     struct member_capture
     {
-        using type = T;
-        
+        using type          = T;
+        using value_type    = T; 
         T value;
         
         static constexpr auto name = ID;
+        
         constexpr operator T() const noexcept { return value; };
-
+        constexpr operator T&() noexcept { return value; };
+        
         friend std::ostream& operator<<(std::ostream& os, member_capture const& w)
         {
           return os << ID << " : " << w.value;
@@ -90,6 +92,15 @@ namespace kumi::_
     
     template<typename T>
     using unwrap_member_capture_t = typename unwrap_member_capture<T>::type;
+
+    
+
+
+    /*template<typename... T>
+    concept is_piecewise_unique
+    {
+        
+    };*/
 }
 
 namespace kumi::literals

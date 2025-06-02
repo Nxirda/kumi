@@ -13,6 +13,8 @@
 #include <type_traits>
 #include <utility>
 
+#include <kumi/detail/member_capture.hpp>
+
 #if !defined(KUMI_DOXYGEN_INVOKED)
 //==================================================================================================
 // Structured binding adaptation
@@ -25,12 +27,12 @@ struct  std::tuple_element<I, kumi::tuple<Head, Tail...>>
 
 template<std::size_t I, typename... Ts> struct std::tuple_element<I, kumi::tuple<Ts...> const>
 {
-  using type = typename tuple_element<I, kumi::tuple<Ts...>>::type const;
+  using type = kumi::_::unwrap_member_capture_t<typename tuple_element<I, kumi::tuple<Ts...>>::type> const;
 };
 
 template<typename Head, typename... Tail> struct std::tuple_element<0, kumi::tuple<Head, Tail...>>
 {
-  using type = Head;
+  using type = kumi::_::unwrap_member_capture_t<Head>;
 };
 
 template<typename... Ts>

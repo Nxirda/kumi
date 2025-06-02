@@ -94,21 +94,20 @@ TTS_CASE("Check cat(tuple) behavior on named tuples")
             (kumi::tuple {"x"_m = 1, 2., "y"_m = 3.f, 4, "z"_m = s, "t"_m = 6.7}));
 
   // Check behavior with tuple of references
-  /*{
+  {
     auto s_named = "x"_m = s;
-    auto ref_s = &s_named;
     auto ref = kumi::tie(s_named);
     auto val = kumi::tuple<float const>{"y"_m = 3.14f};
 
     TTS_EQUAL(kumi::cat(ref, val), (kumi::tuple<short&,float const>{s_named,"y"_m = 3.14f}) );
-  }*/
-  /*{
+  }
+  {
     auto ref = kumi::tie(s);
     auto rref = kumi::tuple<short &&>{std::move(s)};
     auto val = kumi::tuple<float const>{3.14f};
 
     TTS_EQUAL(kumi::cat(ref, std::move(rref), val), (kumi::tuple<short&, short &&, float const>{s,std::move(s),3.14f}) );
-  }*/
+  }
 };
 
 TTS_CASE("Check cat(tuple) constexpr behavior")
