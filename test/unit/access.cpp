@@ -111,6 +111,28 @@ TTS_CASE("Check access to kumi::tuple with names via names")
   TTS_EQUAL(t4["t"_m], 1337);
 };
 
+TTS_CASE("Check access to mixed kumi::tuple via names")
+{
+  using namespace kumi::literals;
+
+  kumi::tuple t2 = {"x"_m = 1.f, 2};
+  kumi::tuple t4 = {"x"_m = '1', 2., 3.f, "t"_m = 4};
+
+  t2["x"_m] = 4.2f;
+  t2[1_c] = 69;
+  TTS_EQUAL(t2["x"_m], 4.2f);
+  TTS_EQUAL(t2[1_c], 69);
+
+  t4["x"_m] = 'z';
+  t4[1_c]   = 6.9;
+  t4[2_c]   = 4.2f;
+  t4["t"_m] = 1337;
+  TTS_EQUAL(t4["x"_m], 'z');
+  TTS_EQUAL(t4[1_c], 6.9);
+  TTS_EQUAL(t4[2_c], 4.2f);
+  TTS_EQUAL(t4["t"_m], 1337);
+};
+
 TTS_CASE("Check constexpr access to kumi::tuple via indexing")
 {
   using namespace kumi::literals;

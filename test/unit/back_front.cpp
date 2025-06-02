@@ -33,6 +33,31 @@ TTS_CASE("Check access via kumi::back")
   TTS_EQUAL(kumi::back(t4), 357);
 };
 
+TTS_CASE("Check access via kumi::back on named tuples")
+{
+  using namespace kumi::literals;
+
+  kumi::tuple t1 = {"x"_m = 1};
+  kumi::tuple t2 = {"x"_m = 1.f, "y"_m = 2};
+  kumi::tuple t3 = {"x"_m = 1., "y"_m = 2.f, "z"_m = 3};
+  kumi::tuple t4 = {"x"_m = '1', 2., "z"_m = 3.f, 4};
+
+  TTS_EQUAL(kumi::back(t1), 1);
+  kumi::back(t1) = 42;
+  TTS_EQUAL(kumi::back(t1), 42);
+
+  TTS_EQUAL(kumi::back(t2), 2);
+  kumi::back(t2) = 42;
+  TTS_EQUAL(kumi::back(t2), 42);
+
+  TTS_EQUAL(kumi::back(t3), 3);
+  kumi::back(t3) = 1337;
+  TTS_EQUAL(kumi::back(t3), 1337);
+
+  TTS_EQUAL(kumi::back(t4), 4);
+  kumi::back(t4) = 357;
+  TTS_EQUAL(kumi::back(t4), 357);
+};
 
 TTS_CASE("Check access via constexpr kumi::back")
 {
@@ -40,6 +65,15 @@ TTS_CASE("Check access via constexpr kumi::back")
   TTS_CONSTEXPR_EQUAL(kumi::back(kumi::tuple{1.f, 2}), 2);
   TTS_CONSTEXPR_EQUAL(kumi::back(kumi::tuple{1., 2.f, 3}), 3);
   TTS_CONSTEXPR_EQUAL(kumi::back(kumi::tuple{'1', 2., 3.f, 4}), 4);
+};
+
+TTS_CASE("Check access via constexpr kumi::back on named tuples")
+{
+  using namespace kumi::literals;
+  TTS_CONSTEXPR_EQUAL(kumi::back(kumi::tuple{"x"_m = 1}), 1);
+  TTS_CONSTEXPR_EQUAL(kumi::back(kumi::tuple{"x"_m = 1.f, "y"_m = 2}), 2);
+  TTS_CONSTEXPR_EQUAL(kumi::back(kumi::tuple{"x"_m = 1., "y"_m = 2.f, "z"_m = 3}), 3);
+  TTS_CONSTEXPR_EQUAL(kumi::back(kumi::tuple{"x"_m = '1', 2., "z"_m = 3.f, 4}), 4);
 };
 
 TTS_CASE("Check access via kumi::front")
@@ -66,10 +100,44 @@ TTS_CASE("Check access via kumi::front")
   TTS_EQUAL(kumi::front(t4), 'Z');
 };
 
+TTS_CASE("Check access via kumi::front on named tuples")
+{
+  using namespace kumi::literals;
+  kumi::tuple t1 = {"x"_m = 1};
+  kumi::tuple t2 = {"x"_m = 1.f, "y"_m = 2};
+  kumi::tuple t3 = {"x"_m = 1., "y"_m = 2.f, "z"_m = 3};
+  kumi::tuple t4 = {"x"_m = '1', 2., "z"_m = 3.f, 4};
+
+  TTS_EQUAL(kumi::front(t1), 1);
+  kumi::front(t1) = 42;
+  TTS_EQUAL(kumi::front(t1), 42);
+
+  TTS_EQUAL(kumi::front(t2), 1.f);
+  kumi::front(t2) = 4.2f;
+  TTS_EQUAL(kumi::front(t2), 4.2f);
+
+  TTS_EQUAL(kumi::front(t3), 1.);
+  kumi::front(t3) = 13.37;
+  TTS_EQUAL(kumi::front(t3), 13.37);
+
+  TTS_EQUAL(kumi::front(t4), '1');
+  kumi::front(t4) = 'Z';
+  TTS_EQUAL(kumi::front(t4), 'Z');
+};
+
 TTS_CASE("Check access via constexpr kumi::front")
 {
   TTS_CONSTEXPR_EQUAL(kumi::front(kumi::tuple{1}), 1  );
   TTS_CONSTEXPR_EQUAL(kumi::front(kumi::tuple{1.f, 2}), 1.f);
   TTS_CONSTEXPR_EQUAL(kumi::front(kumi::tuple{1., 2.f, 3}), 1. );
   TTS_CONSTEXPR_EQUAL(kumi::front(kumi::tuple{'1', 2., 3.f, 4}), '1');
+};
+
+TTS_CASE("Check access via constexpr kumi::front on named tuples")
+{
+  using namespace kumi::literals;
+  TTS_CONSTEXPR_EQUAL(kumi::front(kumi::tuple{"x"_m = 1}), 1  );
+  TTS_CONSTEXPR_EQUAL(kumi::front(kumi::tuple{"x"_m = 1.f, "y"_m = 2}), 1.f);
+  TTS_CONSTEXPR_EQUAL(kumi::front(kumi::tuple{"x"_m = 1., "y"_m = 2.f, "z"_m = 3}), 1. );
+  TTS_CONSTEXPR_EQUAL(kumi::front(kumi::tuple{"x"_m = '1', 2., "z"_m = 3.f, 4}), '1');
 };
