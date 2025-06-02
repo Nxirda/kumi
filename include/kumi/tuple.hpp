@@ -92,7 +92,7 @@ namespace kumi
     template<auto Name>
     static consteval std::size_t get_name_index()
     {
-      constexpr auto idx = []<std::size_t... N>(std::index_sequence<N...>)
+      return []<std::size_t... N>(std::index_sequence<N...>)
       {
         bool checks[] = { ( []()
           {
@@ -107,8 +107,6 @@ namespace kumi
         
         return sizeof...(Ts);
       }(std::index_sequence_for<Ts...>{});
-
-      return idx;
     };
 
     /// @overload
@@ -444,7 +442,8 @@ namespace kumi
   //! @include doc/get.cpp
   //================================================================================================
   template<std::size_t I, typename... Ts>
-  requires(I < sizeof...(Ts)) KUMI_TRIVIAL_NODISCARD constexpr decltype(auto) get(tuple<Ts...> &t) noexcept
+  requires(I < sizeof...(Ts)) KUMI_TRIVIAL_NODISCARD constexpr decltype(auto) 
+  get(tuple<Ts...> &t) noexcept
   {
     return t[index<I>];
   }

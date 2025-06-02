@@ -79,6 +79,38 @@ TTS_CASE("Check cat(tuple) behavior")
   }
 };
 
+TTS_CASE("Check cat(tuple) behavior on named tuples")
+{
+  using namespace kumi::literals;
+
+  short s = 55;
+  TTS_EQUAL((cat(kumi::tuple {}     , kumi::tuple {})), (kumi::tuple {}));
+  TTS_EQUAL((cat(kumi::tuple {"x"_m = 1, "y"_m = 2.}, kumi::tuple {})), (kumi::tuple {"x"_m = 1, "y"_m = 2.}));
+  TTS_EQUAL((cat(kumi::tuple {}, kumi::tuple {"x"_m = 1, "y"_m = 2.})), (kumi::tuple {"x"_m = 1, "y"_m = 2.}));
+  TTS_EQUAL((cat(kumi::tuple {1}, kumi::tuple {"x"_m = 2., 3.f, "y"_m = 4})), (kumi::tuple {1, "x"_m = 2., 3.f, "y"_m = 4}));
+  // This shall not compile
+  TTS_EQUAL((cat(kumi::tuple {"x"_m = 1, "y"_m = 2.}, kumi::tuple {"x"_m = 3.f, "y"_m = 4})), (kumi::tuple {"x"_m = 1, "y"_m = 2., "z"_m = 3.f, "y"_m = 4}));
+  TTS_EQUAL((cat(kumi::tuple {"x"_m = 1, 2.}, kumi::tuple {"y"_m = 3.f, 4}, kumi::tuple {"z"_m = s, 6.7})),
+            (kumi::tuple {"x"_m = 1, 2., "y"_m = 3.f, 4, "z"_m = s, "t"_m = 6.7}));
+
+  // Check behavior with tuple of references
+  /*{
+    auto s_named = "x"_m = s;
+    auto ref_s = &s_named;
+    auto ref = kumi::tie(s_named);
+    auto val = kumi::tuple<float const>{"y"_m = 3.14f};
+
+    TTS_EQUAL(kumi::cat(ref, val), (kumi::tuple<short&,float const>{s_named,"y"_m = 3.14f}) );
+  }*/
+  /*{
+    auto ref = kumi::tie(s);
+    auto rref = kumi::tuple<short &&>{std::move(s)};
+    auto val = kumi::tuple<float const>{3.14f};
+
+    TTS_EQUAL(kumi::cat(ref, std::move(rref), val), (kumi::tuple<short&, short &&, float const>{s,std::move(s),3.14f}) );
+  }*/
+};
+
 TTS_CASE("Check cat(tuple) constexpr behavior")
 {
   constexpr short s = 55;
