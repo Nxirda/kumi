@@ -38,8 +38,8 @@ namespace kumi
     using is_product_type = void;
     using binder_t  = _::make_binder_t<std::make_integer_sequence<int,sizeof...(Ts)>, _::unwrap_member_capture_t<Ts>...>;
 
-    static constexpr bool is_homogeneous = binder_t::is_homogeneous;
-
+    static constexpr bool is_homogeneous    = binder_t::is_homogeneous;
+    static constexpr bool is_named          = (sizeof...(Ts)) && (_::is_member_capture_v<Ts> && ...);
     binder_t impl;
 
     //==============================================================================================
@@ -90,7 +90,7 @@ namespace kumi
     
     /// Compile time helper to find the index associated to a name if it exists
     template<auto Name>
-    static consteval std::size_t get_name_index()
+    static constexpr std::size_t get_name_index()
     {
       return []<std::size_t... N>(std::index_sequence<N...>)
       {
@@ -111,6 +111,7 @@ namespace kumi
 
     /// @overload
     template<auto Name>
+    requires(get_name_index<Name>() < sizeof...(Ts))
     constexpr decltype(auto) operator[](_::member_name<Name> const&)
     {
       constexpr auto idx = get_name_index<Name>();
@@ -119,6 +120,7 @@ namespace kumi
 
     /// @overload
     template<auto Name>
+    requires(get_name_index<Name>() < sizeof...(Ts))
     constexpr decltype(auto) operator[](_::member_name<Name> const&) const
     {
       constexpr auto idx = get_name_index<Name>();
@@ -208,13 +210,22 @@ namespace kumi
     /// @brief Compares a tuple with an other for equality
     template<typename... Us>
     friend constexpr auto operator==(tuple const &self, tuple<Us...> const &other) noexcept
-    requires( equality_comparable<tuple,tuple<Us...>> )
+    //requires( equality_comparable<tuple,tuple<Us...>> && !(_::is_named_v<tuple>) && !(_::is_named_v<tuple<Us...>>) )
     {
-      return [&]<std::size_t... I>(std::index_sequence<I...>)
-      {
-        return ((get<I>(self) == get<I>(other)) && ...);
-      }
-      (std::make_index_sequence<sizeof...(Ts)>());
+        if constexpr(equality_comparable<tuple, tuple<Us...>> && !(_::is_named_v<tuple>) && !(_::is_named_v<tuple<Us...>>)) 
+            return [&]<std::size_t... I>(std::index_sequence<I...>)
+            {
+                return ((get<I>(self) == get<I>(other)) && ...);
+            }
+            (std::make_index_sequence<sizeof...(Ts)>());
+        else if constexpr ( _::named_equality_comparable<tuple, tuple<Us...>> )
+            return [&]<typename... Names>( _::name_list<Names...> )
+            {
+                return ((get<Names>(self) == get<Names>(other)) && ...);
+            }
+            ( _::names_of(self) );
+        else
+            return false;
     }
 
     template<typename... Us>
@@ -470,6 +481,38 @@ namespace kumi
   get(tuple<Ts...> const &&arg) noexcept
   {
     return static_cast<tuple<Ts...> const &&>(arg)[index<I>];
+  }
+
+  /// @overload
+  template<_::member_name Name, typename... Ts>
+  KUMI_TRIVIAL_NODISCARD constexpr decltype(auto)
+  get(tuple<Ts...> &t) 
+  {
+      return t[Name];
+  }
+    
+  /// @overload
+  template<_::member_name Name, typename... Ts>
+  KUMI_TRIVIAL_NODISCARD constexpr decltype(auto)
+  get(tuple<Ts...> &&arg) 
+  {
+    return static_cast<tuple<_::unwrap_member_capture_t<Ts>...> &&>(arg)[Name];
+  }
+
+  /// @overload
+  template<_::member_name Name, typename... Ts>
+  KUMI_TRIVIAL_NODISCARD constexpr decltype(auto)
+  get(tuple<Ts...> const &arg)
+  {
+    return arg[Name];
+  }
+
+  /// @overload
+  template<_::member_name Name, typename... Ts>
+  KUMI_TRIVIAL_NODISCARD constexpr decltype(auto)
+  get(tuple<Ts...> const &&arg) 
+  {
+    return static_cast<tuple<_::unwrap_member_capture_t<Ts>...> const &&>(arg)[Name];
   }
 
   //================================================================================================

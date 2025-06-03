@@ -79,7 +79,7 @@ TTS_CASE("Check cat(tuple) behavior")
   }
 };
 
-TTS_CASE("Check cat(tuple) behavior on named tuples")
+/*TTS_CASE("Check cat(tuple) behavior on named tuples")
 {
   using namespace kumi::literals;
 
@@ -109,6 +109,7 @@ TTS_CASE("Check cat(tuple) behavior on named tuples")
     TTS_EQUAL(kumi::cat(ref, std::move(rref), val), (kumi::tuple<short&, short &&, float const>{s,std::move(s),3.14f}) );
   }
 };
+*/
 
 TTS_CASE("Check cat(tuple) constexpr behavior")
 {

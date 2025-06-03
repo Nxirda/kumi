@@ -68,6 +68,8 @@ namespace kumi::_
             return {std::move(v)};
         }
     };
+    
+//================================================================================================
 
     template<typename T>
     struct is_member_capture : std::false_type{};
@@ -77,7 +79,9 @@ namespace kumi::_
 
     template<typename T>
     inline constexpr bool is_member_capture_v = is_member_capture<T>::value;
-    
+
+//================================================================================================
+
     template<typename T>
     struct unwrap_member_capture
     {
@@ -93,14 +97,64 @@ namespace kumi::_
     template<typename T>
     using unwrap_member_capture_t = typename unwrap_member_capture<T>::type;
 
-    
+//================================================================================================
 
+    template<typename T>
+    struct is_named;
 
-    /*template<typename... T>
-    concept is_piecewise_unique
+    template<typename T>
+    requires( requires { T::is_named; } )
+    struct is_named<T> : std::bool_constant<T::is_named>
+    {};
+
+    template<typename T>
+    inline constexpr auto is_named_v = is_named<T>::value;
+
+    template<typename T>
+    concept named_tuple = product_type<T> && is_named_v<std::remove_cvref_t<T>>;
+//================================================================================================
+
+    template<typename... Ts>
+    struct name_list {};
+
+    template<named_tuple T>
+    constexpr auto names_of(T const &t)
     {
-        
-    };*/
+        return []<std::size_t...I>(std::index_sequence<I...>)
+        {
+            return name_list<typename element_t<I,T>::name...>{};
+        }(std::make_index_sequence<size_v<T>>{});
+    }
+    
+    namespace result
+    {
+        template<named_tuple T>
+        struct names_of
+        {
+            using type = decltype( names_of( std::declval<T>() ));
+        };
+
+        template<named_tuple T>
+        using names_of_t = typename names_of<T>::type;
+    }
+
+//================================================================================================
+//
+    template<typename T, typename U>
+    constexpr auto check_matching_names()
+    {
+        return []<typename...Names>( name_list<Names...> )
+        {
+            return (( _::comparable<  element_t<T::template get_name_index<Names>(), T>
+                                    , element_t<U::template get_name_index<Names>(), U>
+
+                                    >) && ...);
+        }( result::names_of_t<T>{} ); 
+    }
+
+    template<typename T, typename U>
+    concept named_equality_comparable = (named_tuple<T>) && (named_tuple<U>) && 
+                                        (size_v<T> == size_v<U>) && _::check_matching_names<T,U>();
 }
 
 namespace kumi::literals
