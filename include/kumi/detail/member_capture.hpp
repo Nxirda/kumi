@@ -57,6 +57,8 @@ namespace kumi::_
     template<himo::str ID>
     struct member_name
     {
+        static constexpr auto name = ID;
+
         friend std::ostream& operator<<(std::ostream& os, member_name const&)
         {
           return os << ID;
@@ -68,7 +70,7 @@ namespace kumi::_
             return {std::move(v)};
         }
     };
-    
+
 //================================================================================================
 
     template<typename T>
@@ -114,15 +116,15 @@ namespace kumi::_
     concept named_tuple = product_type<T> && is_named_v<std::remove_cvref_t<T>>;
 //================================================================================================
 
-    template<typename... Ts>
+    template<auto... Ts>
     struct name_list {};
 
     template<named_tuple T>
-    constexpr auto names_of(T const &t)
+    constexpr auto names_of(T const&)
     {
         return []<std::size_t...I>(std::index_sequence<I...>)
         {
-            return name_list<typename element_t<I,T>::name...>{};
+            return name_list<element_t<I,T>::name...>{};
         }(std::make_index_sequence<size_v<T>>{});
     }
     
@@ -131,7 +133,7 @@ namespace kumi::_
         template<named_tuple T>
         struct names_of
         {
-            using type = decltype( names_of( std::declval<T>() ));
+            using type = decltype( kumi::_::names_of( std::declval<T>() ));
         };
 
         template<named_tuple T>
@@ -139,22 +141,23 @@ namespace kumi::_
     }
 
 //================================================================================================
-//
+
     template<typename T, typename U>
     constexpr auto check_matching_names()
     {
-        return []<typename...Names>( name_list<Names...> )
+        return []<auto...Names>( name_list<Names...> )
         {
             return (( _::comparable<  element_t<T::template get_name_index<Names>(), T>
                                     , element_t<U::template get_name_index<Names>(), U>
-
-                                    >) && ...);
+                                    >
+                    ) && ...);
         }( result::names_of_t<T>{} ); 
     }
 
     template<typename T, typename U>
-    concept named_equality_comparable = (named_tuple<T>) && (named_tuple<U>) && 
-                                        (size_v<T> == size_v<U>) && _::check_matching_names<T,U>();
+    concept named_equality_comparable = (named_tuple<T>) && (named_tuple<U>) 
+                                     && (size_v<T> == size_v<U>) 
+                                     && _::check_matching_names<T,U>();
 }
 
 namespace kumi::literals

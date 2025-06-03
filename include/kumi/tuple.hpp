@@ -219,11 +219,10 @@ namespace kumi
             }
             (std::make_index_sequence<sizeof...(Ts)>());
         else if constexpr ( _::named_equality_comparable<tuple, tuple<Us...>> )
-            return [&]<typename... Names>( _::name_list<Names...> )
+            return [&]<auto... Names>( _::name_list<Names...> )
             {
-                return ((get<Names>(self) == get<Names>(other)) && ...);
-            }
-            ( _::names_of(self) );
+                return ((self[_::member_name<Names>{}] == other[_::member_name<Names>{}]) && ...);
+            }( _::names_of(self) );
         else
             return false;
     }

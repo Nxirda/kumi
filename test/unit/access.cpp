@@ -193,10 +193,6 @@ TTS_CASE("Check constexpr access to kumi::tuple with names via names")
   
   TTS_CONSTEXPR_EQUAL(get<"x"_m>(t1), t1["x"_m]);
 
-  /*using type = kumi::element_t<1_c, decltype(t1)>;
-  type t;
-  void *ptr = t;*/
-
   TTS_CONSTEXPR_EQUAL(get<"x"_m>(t2), t2["x"_m]);
   TTS_CONSTEXPR_EQUAL(get<"y"_m>(t2), t2["y"_m]);
 
