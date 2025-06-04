@@ -9,8 +9,8 @@
 
 namespace kumi
 {
-
-  namespace _{
+  namespace _
+  {
     template<typename T>
     inline constexpr bool is_reference_wrapper_v =
       !std::is_same_v<std::decay_t<typename std::unwrap_reference<T &&>::type>,
@@ -20,19 +20,21 @@ namespace kumi
     struct apply_object_unwrap{
       using type = T &&;
     };
+
     template<typename T>
     requires is_reference_wrapper_v<T>
     struct apply_object_unwrap<T>{
       using type = typename std::remove_cvref_t<T>::type &;
     };
+
     template<typename T>
     requires std::is_pointer_v<std::remove_cvref_t<T>>
     struct apply_object_unwrap<T>{
       using type = std::remove_pointer_t<std::remove_cvref_t<T>> &;
     };
+
     template<typename T>
     using apply_object_unwrap_t = typename apply_object_unwrap<T>::type;
-
   }
 
   //================================================================================================

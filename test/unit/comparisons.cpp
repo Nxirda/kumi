@@ -35,49 +35,71 @@ TTS_CASE("Check == operator on kumi::tuple")
   kumi::tuple tp2 = {1.f, "y"_m = 2};
   kumi::tuple tp3 = {"x"_m = 1., 2.f,  "y"_m = 3};
   kumi::tuple tp4 = {'1', 2., "z"_m = 3.f, "y"_m = 4};
-    
-  TTS_NOT_EQUAL(t1, tn1);
+   
+  TTS_EQUAL(t1, tn1);
   
   TTS_EQUAL(t2, tp2);
-  TTS_NOT_EQUAL(t2, tn2);
+  TTS_EQUAL(t2, tn2);
   TTS_EQUAL(t2, tp2);
-  TTS_EQUAL(tn2, tnp2);
-  TTS_NOT_EQUAL(tn2, tp2);
+  TTS_NOT_EQUAL(tn2, tnp2);
+  TTS_EQUAL(tn2, tp2);
 
   TTS_EQUAL(t3, tp3);
-  TTS_NOT_EQUAL(t3, tn3);
+  TTS_EQUAL(t3, tn3);
   TTS_EQUAL(t3, tp3);
-  TTS_EQUAL(tn3, tnp3);
-  TTS_NOT_EQUAL(tn3, tp3);
+  TTS_NOT_EQUAL(tn3, tnp3);
+  TTS_EQUAL(tn3, tp3);
 
   TTS_EQUAL(t4, tp4);
-  TTS_NOT_EQUAL(t4, tn4);
+  TTS_EQUAL(t4, tn4);
   TTS_EQUAL(t4, tp4);
-  TTS_EQUAL(tn4, tnp4);
-  TTS_NOT_EQUAL(tn4, tp4);
-
+  TTS_NOT_EQUAL(tn4, tnp4);
+  TTS_EQUAL(tn4, tp4);
 };
 
 TTS_CASE("Check constexpr access to kumi::tuple via indexing")
 {
   using namespace kumi::literals;
 
+  // Ref
   constexpr kumi::tuple t1 = {1};
   constexpr kumi::tuple t2 = {1.f, 2};
   constexpr kumi::tuple t3 = {1., 2.f, 3};
   constexpr kumi::tuple t4 = {'1', 2., 3.f, 4};
+
+  // Named
+  constexpr kumi::tuple tn1 = {"x"_m = 1};
+  constexpr kumi::tuple tn2 = {"x"_m = 1.f, "y"_m = 2};
+  constexpr kumi::tuple tn3 = {"x"_m = 1., "y"_m = 2.f, "z"_m = 3 };
+  constexpr kumi::tuple tn4 = {"x"_m = '1', "y"_m = 2., "z"_m = 3.f, "t"_m = 4};
+
+  // Named and permuted
+  constexpr kumi::tuple tnp2 = {"y"_m = 2, "x"_m = 1.f };
+  constexpr kumi::tuple tnp3 = {"x"_m = 1., "z"_m = 3,  "y"_m = 2.f};
+  constexpr kumi::tuple tnp4 = {"t"_m = 4, "z"_m = 3.f, "y"_m = 2., "x"_m = '1'};
+
+  // Partially named
+  constexpr kumi::tuple tp2 = {1.f, "y"_m = 2};
+  constexpr kumi::tuple tp3 = {"x"_m = 1., 2.f,  "y"_m = 3};
+  constexpr kumi::tuple tp4 = {'1', 2., "z"_m = 3.f, "y"_m = 4};
     
-  TTS_CONSTEXPR_EQUAL(get<0>(t1), t1[0_c]);
+  TTS_EQUAL(t1, tn1);
+  
+  TTS_EQUAL(t2, tp2);
+  TTS_EQUAL(t2, tn2);
+  TTS_EQUAL(t2, tp2);
+  TTS_NOT_EQUAL(tn2, tnp2);
+  TTS_EQUAL(tn2, tp2);
 
-  TTS_CONSTEXPR_EQUAL(get<0>(t2), t2[0_c]);
-  TTS_CONSTEXPR_EQUAL(get<1>(t2), t2[1_c]);
+  TTS_EQUAL(t3, tp3);
+  TTS_EQUAL(t3, tn3);
+  TTS_EQUAL(t3, tp3);
+  TTS_NOT_EQUAL(tn3, tnp3);
+  TTS_EQUAL(tn3, tp3);
 
-  TTS_CONSTEXPR_EQUAL(get<0>(t3), t3[0_c]);
-  TTS_CONSTEXPR_EQUAL(get<1>(t3), t3[1_c]);
-  TTS_CONSTEXPR_EQUAL(get<2>(t3), t3[2_c]);
-
-  TTS_CONSTEXPR_EQUAL(get<0>(t4), t4[0_c]);
-  TTS_CONSTEXPR_EQUAL(get<1>(t4), t4[1_c]);
-  TTS_CONSTEXPR_EQUAL(get<2>(t4), t4[2_c]);
-  TTS_CONSTEXPR_EQUAL(get<3>(t4), t4[3_c]);
+  TTS_EQUAL(t4, tp4);
+  TTS_EQUAL(t4, tn4);
+  TTS_EQUAL(t4, tp4);
+  TTS_NOT_EQUAL(tn4, tnp4);
+  TTS_EQUAL(tn4, tp4);
 };

@@ -53,6 +53,55 @@ TTS_CASE("Check result::flatten/flatten_all<Tuple> behavior")
               );
 };
 
+TTS_CASE("Check result::flatten/flatten_all<Tuple> behavior on named tuple")
+{
+  using namespace kumi::literals;
+
+  using f1 = decltype("x"_m = 'x'       );
+  using f2 = decltype("y"_m = short{55} );
+  using f3 = decltype("z"_m = 1         );
+  using f4 = decltype("t"_m = 2.        );
+
+  TTS_TYPE_IS ( (kumi::result::flatten_t<kumi::tuple<f1,f2,f3,f4>>)
+              , (kumi::tuple<char,short,int,double>)
+              );
+
+  TTS_TYPE_IS ( (kumi::result::flatten_t<kumi::tuple<f1,kumi::tuple<f2,f3,kumi::tuple<f4>>>>)
+              , (kumi::tuple<char,short,int,kumi::tuple<double>>)
+              );
+
+  TTS_TYPE_IS ( (kumi::result::flatten_all_t<kumi::tuple<kumi::tuple<f1,f2>
+                                                        ,kumi::tuple<f3,kumi::tuple<f4>>
+                                                        >
+                                            >
+                )
+              , (kumi::tuple<char,short,int,double>)
+              );
+
+  auto func     = [](auto& m)        { return &m; };
+  auto cfunc    = [](auto const& m)  { return &m; };
+  using func_t  = decltype(func);
+  using cfunc_t = decltype(cfunc);
+
+  TTS_TYPE_IS ( (kumi::result::flatten_all_t<kumi::tuple<kumi::tuple<f1,f2>
+                                                        ,kumi::tuple<f3,kumi::tuple<f4>>
+                                                        >
+                                            , func_t
+                                            >
+                )
+              , (kumi::tuple<char*,short*,int*,double*>)
+              );
+
+  TTS_TYPE_IS ( (kumi::result::flatten_all_t<kumi::tuple<kumi::tuple<f1,f2>
+                                                        ,kumi::tuple<f3,kumi::tuple<f4>>
+                                                        >
+                                            , cfunc_t
+                                            >
+                )
+              , (kumi::tuple<char const*,short const*,int const*,double const*>)
+              );
+};
+
 TTS_CASE("Check tuple::flatten behavior")
 {
   TTS_EQUAL( kumi::flatten(kumi::tuple {}), kumi::tuple {});
@@ -124,7 +173,7 @@ TTS_CASE("Check tuple::flatten_all behavior on named tuples")
   using namespace kumi::literals;
   TTS_EQUAL((kumi::flatten_all(kumi::tuple {"x"_m = 2., "y"_m = 1, "z"_m = short {55}})),
             (kumi::tuple {"x"_m = 2., "y"_m = 1, "z"_m = short {55}}));
-  TTS_NOT_EQUAL((kumi::flatten_all(kumi::tuple {"x"_m = 3.25f, "y"_m = kumi::tuple {2., 1, short {55}}, "id"_m = 'z'})),
+  TTS_EQUAL((kumi::flatten_all(kumi::tuple {"x"_m = 3.25f, "y"_m = kumi::tuple {2., 1, short {55}}, "id"_m = 'z'})),
             (kumi::tuple {3.25f, 2., 1, short {55}, 'z'}));
 };
 

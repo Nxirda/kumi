@@ -210,21 +210,21 @@ namespace kumi
     /// @brief Compares a tuple with an other for equality
     template<typename... Us>
     friend constexpr auto operator==(tuple const &self, tuple<Us...> const &other) noexcept
-    //requires( equality_comparable<tuple,tuple<Us...>> && !(_::is_named_v<tuple>) && !(_::is_named_v<tuple<Us...>>) )
-    {
-        if constexpr(equality_comparable<tuple, tuple<Us...>> && !(_::is_named_v<tuple>) && !(_::is_named_v<tuple<Us...>>)) 
+    requires( equality_comparable<tuple,tuple<Us...>> ) 
+    {   
+        /*if constexpr ( _::named_equality_comparable<tuple, tuple<Us...>> )
+            return [&]<auto... Names>( _::name_list<Names...> )
+            {
+                // Couldnt get get<> to work
+                return ((self[_::member_name<Names>{}] == other[_::member_name<Names>{}]) && ...);
+            }
+            ( _::names_of(self) );*/
+
             return [&]<std::size_t... I>(std::index_sequence<I...>)
             {
                 return ((get<I>(self) == get<I>(other)) && ...);
             }
             (std::make_index_sequence<sizeof...(Ts)>());
-        else if constexpr ( _::named_equality_comparable<tuple, tuple<Us...>> )
-            return [&]<auto... Names>( _::name_list<Names...> )
-            {
-                return ((self[_::member_name<Names>{}] == other[_::member_name<Names>{}]) && ...);
-            }( _::names_of(self) );
-        else
-            return false;
     }
 
     template<typename... Us>
@@ -243,20 +243,39 @@ namespace kumi
     {
       // lexicographical order is defined as
       // (v0 < w0) || ... andnot(wi < vi, vi+1 < wi+1) ... || andnot(wn-1 < vn-1, vn < wn);
-      auto res = get<0>(lhs) < get<0>(rhs);
+        /*if constexpr( _::named_equality_comparable<tuple, tuple<Us...>> )
+        {
+            // Here is needed to be fixed
+            auto res = get<0>(lhs) < get<0>(rhs);
 
-      auto const order = [&]<typename Index>(Index i)
-      {
-        auto y_less_x_prev  = rhs[i]  < lhs[i];
-        auto x_less_y       = lhs[index_t<Index::value+1>{}] < rhs[index_t<Index::value+1>{}];
-        return x_less_y && !y_less_x_prev;
-      };
+            auto const order = [&](auto prev_name, auto name)
+            {
+                auto y_less_x_prev  = rhs[prev_name] < lhs[prev_name];
+                auto x_less_y       = lhs[name] < rhs[name];
+                return x_less_y && !y_less_x_prev;
+            };
+            // Here is to be fixed also I dont know how to iterate in a weird way here
+            return [&]<auto... Names>( _::name_list<Names...> )
+            {
+                return (res || ... || order(index_t<I>{}));
+            }
+            ( _::names_of(lhs) );
+            
+        }*/
+          auto res = get<0>(lhs) < get<0>(rhs);
 
-      return [&]<std::size_t... I>(std::index_sequence<I...>)
-      {
-        return (res || ... || order(index_t<I>{}));
-      }
-      (std::make_index_sequence<sizeof...(Ts)-1>());
+          auto const order = [&]<typename Index>(Index i)
+          {
+            auto y_less_x_prev  = rhs[i]  < lhs[i];
+            auto x_less_y       = lhs[index_t<Index::value+1>{}] < rhs[index_t<Index::value+1>{}];
+            return x_less_y && !y_less_x_prev;
+          };
+
+          return [&]<std::size_t... I>(std::index_sequence<I...>)
+          {
+            return (res || ... || order(index_t<I>{}));
+          }
+          (std::make_index_sequence<sizeof...(Ts)-1>());
     }
 
     /// @ingroup tuple

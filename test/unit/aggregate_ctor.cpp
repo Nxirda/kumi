@@ -20,10 +20,15 @@ TTS_CASE("Check tuple_element of kumi::tuple")
 TTS_CASE("Check tuple_element of kumi::tuple with names")
 {
   using namespace kumi::literals;
-  auto aggregate = kumi::tuple{"x"_m = '1', "y"_m = 2., "z"_m = 3.f};
-  TTS_TYPE_IS((std::tuple_element_t<0, decltype(aggregate)>), char);
-  TTS_TYPE_IS((std::tuple_element_t<1, decltype(aggregate)>), double);
-  TTS_TYPE_IS((std::tuple_element_t<2, decltype(aggregate)>), float);
+
+  auto x = "x"_m = '1';
+  auto y = "y"_m = 2. ;
+  auto z = "z"_m = 3.f;
+
+  auto aggregate = kumi::tuple{x, y, z};
+  TTS_TYPE_IS((std::tuple_element_t<0, decltype(aggregate)>), decltype(x));
+  TTS_TYPE_IS((std::tuple_element_t<1, decltype(aggregate)>), decltype(y));
+  TTS_TYPE_IS((std::tuple_element_t<2, decltype(aggregate)>), decltype(z));
 };
 
 TTS_CASE("Check construction of kumi::tuple as an aggregate")

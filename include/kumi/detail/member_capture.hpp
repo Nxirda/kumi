@@ -39,8 +39,7 @@ namespace kumi::_
     template<himo::str ID, typename T>
     struct member_capture
     {
-        using type          = T;
-        using value_type    = T; 
+        using type = T;
         T value;
         
         static constexpr auto name = ID;
@@ -125,7 +124,8 @@ namespace kumi::_
         return []<std::size_t...I>(std::index_sequence<I...>)
         {
             return name_list<element_t<I,T>::name...>{};
-        }(std::make_index_sequence<size_v<T>>{});
+        }
+        (std::make_index_sequence<size_v<T>>{});
     }
     
     namespace result
@@ -158,6 +158,7 @@ namespace kumi::_
     concept named_equality_comparable = (named_tuple<T>) && (named_tuple<U>) 
                                      && (size_v<T> == size_v<U>) 
                                      && _::check_matching_names<T,U>();
+
 }
 
 namespace kumi::literals

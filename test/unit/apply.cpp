@@ -71,6 +71,20 @@ TTS_CASE("Check result::apply<F,Tuple> behavior")
   TTS_TYPE_IS((kumi::result::apply_t<func_t,kumi::tuple<char,short,int,double>>), double);
 };
 
+TTS_CASE("Check result::apply<F,Tuple> behavior on named tuple")
+{
+  using namespace kumi::literals; 
+
+  auto lambda = [](auto... m) { return (m + ...); };
+  using func_t = decltype(lambda);
+  using field1 = decltype("x"_m = 'x'       );
+  using field2 = decltype("y"_m = short{55} );
+  using field3 = decltype("z"_m = 1         );
+  using field4 = decltype("t"_m = 2.        );
+
+  TTS_TYPE_IS((kumi::result::apply_t<func_t,kumi::tuple<field1,field2,field3,field4>>), double);
+};
+
 TTS_CASE("Check apply behavior")
 {
   TTS_EQUAL((kumi::apply( []() { return 99; }, kumi::tuple{})), 99);
@@ -94,6 +108,28 @@ TTS_CASE("Check apply behavior")
             "1 5 things ");
 };
 
+TTS_CASE("Check apply behavior on named tuple")
+{
+  using namespace kumi::literals;
+  TTS_EQUAL((kumi::apply(
+                [](auto... m) {
+                  std::ostringstream s;
+                  ((s << m << " "), ...);
+                  return s.str();
+                },
+                kumi::tuple {"x"_m = 1, "y"_m = '5', "z"_m = "things"})),
+            "1 5 things ");
+
+  kumi::tuple some_tuple {"x"_m = 1, "y"_m = '5', "z"_m = "things"};
+
+  TTS_EQUAL((some_tuple([](auto... m) {
+              std::ostringstream s;
+              ((s << m << " "), ...);
+              return s.str();
+            })),
+            "1 5 things ");
+};
+
 TTS_CASE("Check apply constexpr behavior")
 {
   constexpr auto t1 = []() {
@@ -108,6 +144,23 @@ TTS_CASE("Check apply constexpr behavior")
 
   constexpr auto empty = []() { return 99; };
   TTS_CONSTEXPR_EQUAL((kumi::apply( empty, kumi::tuple{})), 99);
+
+  TTS_CONSTEXPR_EQUAL(t1, 6.);
+  TTS_CONSTEXPR_EQUAL(t2, 6.);
+};
+
+TTS_CASE("Check apply constexpr behavior on named tuple")
+{
+  using namespace kumi::literals;
+  constexpr auto t1 = []() {
+    auto it = kumi::tuple {"x"_m = 1, "y"_m = 2., "z"_m = 3.f};
+    return kumi::apply([](auto... m) { return (m + ...); }, it);
+  }();
+
+  constexpr auto t2 = []() {
+    auto it = kumi::tuple {"x"_m = 1, "y"_m = 2., "z"_m = 3.f};
+    return it([](auto... m) { return (m + ...); });
+  }();
 
   TTS_CONSTEXPR_EQUAL(t1, 6.);
   TTS_CONSTEXPR_EQUAL(t2, 6.);
