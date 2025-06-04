@@ -44,8 +44,8 @@ namespace kumi::_
         
         static constexpr auto name = ID;
         
-        constexpr operator T() const noexcept { return value; };
-        constexpr operator T&() noexcept { return value; };
+        constexpr operator T  () const noexcept { return value; };
+        constexpr operator T& () noexcept       { return value; };
         
         friend std::ostream& operator<<(std::ostream& os, member_capture const& w)
         {

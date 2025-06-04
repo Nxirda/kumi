@@ -67,7 +67,7 @@ TTS_CASE("Check result::flatten/flatten_all<Tuple> behavior on named tuple")
               );
 
   TTS_TYPE_IS ( (kumi::result::flatten_t<kumi::tuple<f1,kumi::tuple<f2,f3,kumi::tuple<f4>>>>)
-              , (kumi::tuple<char,short,int,kumi::tuple<double>>)
+              , (kumi::tuple<char,f2,f3,kumi::tuple<f4>>)
               );
 
   TTS_TYPE_IS ( (kumi::result::flatten_all_t<kumi::tuple<kumi::tuple<f1,f2>
