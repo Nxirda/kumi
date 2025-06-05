@@ -28,6 +28,26 @@ TTS_CASE("Check result::partition<Func,Tuple> behavior")
               );
 };
 
+TTS_CASE("Check result::partition<Func,Tuple> behavior on named tuples")
+{
+  using namespace kumi::literals;
+    
+  using fint    = decltype("x"_m = 1);
+  using ffloat  = decltype("y"_m = 1.f);
+  using fdouble = decltype("z"_m = 1.);
+
+  TTS_TYPE_IS ( (kumi::result::partition_t<std::is_integral,kumi::tuple<fint,ffloat,fdouble>>)
+              , (kumi::tuple<kumi::tuple<int>,kumi::tuple<float,double>>)
+              );
+
+  TTS_TYPE_IS ( (kumi::result::partition_t< std::is_rvalue_reference
+                                          , kumi::tuple<fint&,ffloat&&,fdouble const&>
+                                          >
+                )
+              , (kumi::tuple<kumi::tuple<float&&>,kumi::tuple<int&, double const&>>)
+              );
+};
+
 TTS_CASE("Check partition(kumi::tuple<>{}) behavior")
 {
   TTS_EQUAL ( (kumi::partition<std::is_pointer>(kumi::tuple{}))

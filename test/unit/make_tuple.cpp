@@ -26,6 +26,24 @@ TTS_CASE("Check tuple_element of kumi::tuple")
   TTS_TYPE_IS((std::tuple_element_t<4, decltype(made)>), double &);
 };
 
+TTS_CASE("Check tuple_element of kumi::tuple on named tuples")
+{
+  using namespace kumi::literals;
+
+  float const                         f {};
+  double                              d;
+  std::reference_wrapper<float const> rf = f;
+  std::reference_wrapper<double>      rd = d;
+
+  auto made = kumi::make_tuple("x"_m ='1', "y"_m = 2., "z"_m = 3.f, "t"_m = rf, "l"_m = rd);
+
+  TTS_TYPE_IS((std::tuple_element_t<0, decltype(made)>), char);
+  TTS_TYPE_IS((std::tuple_element_t<1, decltype(made)>), double);
+  TTS_TYPE_IS((std::tuple_element_t<2, decltype(made)>), float);
+  TTS_TYPE_IS((std::tuple_element_t<3, decltype(made)>), float const &);
+  TTS_TYPE_IS((std::tuple_element_t<4, decltype(made)>), double &);
+};
+
 TTS_CASE("Check construction of kumi::tuple via make_tuple")
 {
   auto t0 = kumi::make_tuple();

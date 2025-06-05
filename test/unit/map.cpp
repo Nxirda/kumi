@@ -29,6 +29,34 @@ TTS_CASE("Check result::map<F,Tuple...> behavior")
               );
 };
 
+TTS_CASE("Check result::map<F,Tuple...> behavior on named tuples")
+{
+  using namespace kumi::literals;
+
+  auto lambda = [](auto const& m) { return &m; };
+  using func_t = decltype(lambda);
+
+  using fchar   = decltype("x"_m = 'x');
+  using fshort  = decltype("y"_m = short{1});
+  using fint    = decltype("z"_m = 1);
+  using ffloat  = decltype("l"_m = 1.f);
+  using fdouble = decltype("t"_m = 1.);
+
+  TTS_TYPE_IS ( (kumi::result::map_t<func_t,kumi::tuple<fchar,fshort,fint,fdouble>>)
+              , (kumi::tuple<char const*,short const*,int const*,double const*>)
+              );
+
+  auto add = [](auto a, auto b) { return a+b; };
+  using add_t = decltype(add);
+
+  TTS_TYPE_IS ( (kumi::result::map_t<add_t, kumi::tuple<fchar,fshort,fint,fdouble>
+                                          , kumi::tuple<fchar,fshort,fint,ffloat>
+                                    >
+                )
+              , (kumi::tuple<int,int,int,double>)
+              );
+};
+
 TTS_CASE("Check map(f, {}) behavior")
 {
   bool was_run = false;

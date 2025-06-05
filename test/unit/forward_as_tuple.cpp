@@ -55,10 +55,10 @@ TTS_CASE("Check tuple_element of kumi::forward_as_tuple on named tuples")
   float const f {};
   auto forwarded = kumi::forward_as_tuple("x"_m = 'z', "y"_m = ctor_tracker(), "z"_m = i, "t"_m = f);
 
-  TTS_TYPE_IS((std::tuple_element_t<0, decltype(forwarded)>), (kumi::_::member_capture<"x", char>&&)        ); 
+  TTS_TYPE_IS((std::tuple_element_t<0, decltype(forwarded)>), (kumi::_::member_capture<"x", char>        &&)); 
   TTS_TYPE_IS((std::tuple_element_t<1, decltype(forwarded)>), (kumi::_::member_capture<"y", ctor_tracker>&&)); 
-  TTS_TYPE_IS((std::tuple_element_t<2, decltype(forwarded)>), (kumi::_::member_capture<"z", int>&)          );
-  TTS_TYPE_IS((std::tuple_element_t<3, decltype(forwarded)>), (kumi::_::member_capture<"t", float const>&)  );
+  TTS_TYPE_IS((std::tuple_element_t<2, decltype(forwarded)>), (kumi::_::member_capture<"z", int>         &&));
+  TTS_TYPE_IS((std::tuple_element_t<3, decltype(forwarded)>), (kumi::_::member_capture<"t", float>       &&));
 };
 
 template<kumi::product_type Tuple>
