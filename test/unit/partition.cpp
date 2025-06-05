@@ -37,14 +37,14 @@ TTS_CASE("Check result::partition<Func,Tuple> behavior on named tuples")
   using fdouble = decltype("z"_m = 1.);
 
   TTS_TYPE_IS ( (kumi::result::partition_t<std::is_integral,kumi::tuple<fint,ffloat,fdouble>>)
-              , (kumi::tuple<kumi::tuple<int>,kumi::tuple<float,double>>)
+              , (kumi::tuple<kumi::tuple<fint>,kumi::tuple<ffloat,fdouble>>)
               );
 
   TTS_TYPE_IS ( (kumi::result::partition_t< std::is_rvalue_reference
                                           , kumi::tuple<fint&,ffloat&&,fdouble const&>
                                           >
                 )
-              , (kumi::tuple<kumi::tuple<float&&>,kumi::tuple<int&, double const&>>)
+              , (kumi::tuple<kumi::tuple<ffloat&&>,kumi::tuple<fint&, fdouble const&>>)
               );
 };
 

@@ -35,13 +35,19 @@ TTS_CASE("Check tuple_element of kumi::tuple on named tuples")
   std::reference_wrapper<float const> rf = f;
   std::reference_wrapper<double>      rd = d;
 
-  auto made = kumi::make_tuple("x"_m ='1', "y"_m = 2., "z"_m = 3.f, "t"_m = rf, "l"_m = rd);
+  auto f1 = "x"_m = '1';
+  auto f2 = "y"_m = 2.;
+  auto f3 = "z"_m = 3.f;
+  auto f4 = "t"_m = rf;
+  auto f5 = "l"_m = rd;
 
-  TTS_TYPE_IS((std::tuple_element_t<0, decltype(made)>), char);
-  TTS_TYPE_IS((std::tuple_element_t<1, decltype(made)>), double);
-  TTS_TYPE_IS((std::tuple_element_t<2, decltype(made)>), float);
-  TTS_TYPE_IS((std::tuple_element_t<3, decltype(made)>), float const &);
-  TTS_TYPE_IS((std::tuple_element_t<4, decltype(made)>), double &);
+  auto made = kumi::make_tuple(f1, f2, f3, f4, f5);
+
+  TTS_TYPE_IS((std::tuple_element_t<0, decltype(made)>), (kumi::_::member_capture<"x", char>            ));
+  TTS_TYPE_IS((std::tuple_element_t<1, decltype(made)>), (kumi::_::member_capture<"y", double>          ));
+  TTS_TYPE_IS((std::tuple_element_t<2, decltype(made)>), (kumi::_::member_capture<"z", float>           ));
+  TTS_TYPE_IS((std::tuple_element_t<3, decltype(made)>), (kumi::_::member_capture<"t", float const &>   ));
+  TTS_TYPE_IS((std::tuple_element_t<4, decltype(made)>), (kumi::_::member_capture<"l", double &>        ));
 };
 
 TTS_CASE("Check construction of kumi::tuple via make_tuple")

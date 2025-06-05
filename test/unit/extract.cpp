@@ -9,6 +9,29 @@
 #include <kumi/tuple.hpp>
 #include <tts/tts.hpp>
 
+TTS_CASE("Check result::extract<Tuple, Index> behavior")
+{
+    using namespace kumi::literals;
+
+    using tpl_t  = kumi::tuple<char, double, float, int>;
+    TTS_TYPE_IS((kumi::result::extract_t<tpl_t, 0_c>) , (tpl_t));
+};
+
+TTS_CASE("Check result::extract<Tuple, Index> behavior on named tuples")
+{
+  using namespace kumi::literals;
+    
+  using fchar   = decltype("x"_m = 'x'  );
+  using ffloat  = decltype("y"_m = 1.f  );
+  using fint    = decltype("z"_m = 1    );
+  using fdouble = decltype("t"_m = 2.   );
+
+  using tpl_t  = kumi::tuple<fchar, fdouble, ffloat, fint>;
+  TTS_TYPE_IS((kumi::result::extract_t<tpl_t, 0_c>) , (tpl_t));
+
+  TTS_TYPE_IS((kumi::result::extract_t<tpl_t, 1_c>) , (kumi::tuple<fdouble, ffloat, fint>));
+};
+
 TTS_CASE("Check tuple::extract behavior")
 {
   using namespace kumi::literals;

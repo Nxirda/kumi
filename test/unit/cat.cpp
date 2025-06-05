@@ -55,49 +55,50 @@ TTS_CASE("Check result::cat<Tuple...> behavior")
 TTS_CASE("Check result::cat<Tuple...> behavior on named tuples")
 {
   using namespace kumi::literals;
-  using f1 = decltype("x"_m = 'x'       );
-  using f2 = decltype("y"_m = short{55} );
-  using f3 = decltype("z"_m = 1         );
-  using f4 = decltype("t"_m = 3.        );
+
+  using fchar   = decltype("x"_m = 'x'       );
+  using fshort  = decltype("y"_m = short{55} );
+  using fint    = decltype("z"_m = 1         );
+  using fdouble      = decltype("t"_m = 3.        );
       
-  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<>,kumi::tuple<f1,f2,f3,f4>>)
-              , (kumi::tuple<f1,f2,f3,f4>)
+  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<>,kumi::tuple<fchar,fshort,fint,fdouble>>)
+              , (kumi::tuple<fchar,fshort,fint,fdouble>)
               );
 
-  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<f1>,kumi::tuple<f2,f3,f4>>)
-              , (kumi::tuple<f1,f2,f3,f4>)
+  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<fchar>,kumi::tuple<fshort,fint,fdouble>>)
+              , (kumi::tuple<fchar,fshort,fint,fdouble>)
               );
 
-  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<f1,f2>,kumi::tuple<f3,f4>>)
-              , (kumi::tuple<f1,f2,f3,f4>)
+  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<fchar,fshort>,kumi::tuple<fint,fdouble>>)
+              , (kumi::tuple<fchar,fshort,fint,fdouble>)
               );
 
-  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<f1>,kumi::tuple<f2>,kumi::tuple<f3,f4>>)
-              , (kumi::tuple<f1,f2,f3,f4>)
+  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<fchar>,kumi::tuple<fshort>,kumi::tuple<fint,fdouble>>)
+              , (kumi::tuple<fchar,fshort,fint,fdouble>)
               );
 
-  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<f1,f2&>,kumi::tuple<f3&,f4>>)
-              , (kumi::tuple<f1,f2&,f3&,f4>)
+  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<fchar,fshort&>,kumi::tuple<fint&,fdouble>>)
+              , (kumi::tuple<fchar,fshort&,fint&,fdouble>)
               );
 
-  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<f1 &&> &&>)
-              , (kumi::tuple<f1 &&>)
+  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<fchar &&> &&>)
+              , (kumi::tuple<fchar &&>)
               );
 
-  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<f1 &&> &&, kumi::tuple<f1 &> &, kumi::tuple<f1> &>)
-              , (kumi::tuple<f1 &&, f1 &, f1>)
+  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<fchar &&> &&, kumi::tuple<fchar &> &, kumi::tuple<fchar> &>)
+              , (kumi::tuple<fchar &&, fchar &, fchar>)
               );
 
-  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<f1 &&> &&, kumi::tuple<f1 &> &&, kumi::tuple<f1> &>)
-                , (kumi::tuple<f1 &&, f1 &, f1>)
+  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<fchar &&> &&, kumi::tuple<fchar &> &&, kumi::tuple<fchar> &>)
+                , (kumi::tuple<fchar &&, fchar &, fchar>)
               );
 
-  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<f1 &&> &&, kumi::tuple<f1 &> &, kumi::tuple<f1> &&>)
-              , (kumi::tuple<f1 &&, f1 &, f1>)
+  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<fchar &&> &&, kumi::tuple<fchar &> &, kumi::tuple<fchar> &&>)
+              , (kumi::tuple<fchar &&, fchar &, fchar>)
               );
 
-  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<f1 &&> &&, kumi::tuple<f1 &> &&, kumi::tuple<f1> &&>)
-                , (kumi::tuple<f1 &&, f1 &, f1>)
+  TTS_TYPE_IS ( (kumi::result::cat_t<kumi::tuple<fchar &&> &&, kumi::tuple<fchar &> &&, kumi::tuple<fchar> &&>)
+                , (kumi::tuple<fchar &&, fchar &, fchar>)
               );
 };
 

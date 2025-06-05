@@ -64,7 +64,7 @@ namespace kumi::_
         }
         
         template<typename T>
-        constexpr member_capture<ID,T> operator=(T v)
+        constexpr member_capture<ID,typename std::unwrap_ref_decay<T>::type> operator=(T v)
         {
             return {std::move(v)};
         }

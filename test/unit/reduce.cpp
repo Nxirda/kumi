@@ -47,6 +47,48 @@ TTS_CASE("Check result::prod/sum/bit_* behavior")
               );
 };
 
+TTS_CASE("Check result::prod/sum/bit_* behavior on named tuples")
+{
+  using namespace kumi::literals;
+  using fchar   = decltype("x"_m = 'x');
+  using fshort  = decltype("y"_m = short{1});
+  using fint    = decltype("z"_m = 1);
+  using fdouble = decltype("t"_m = 2.);
+  using fsize_t = decltype("l"_m = std::size_t{1});
+
+  TTS_TYPE_IS ( (kumi::result::sum_t<kumi::tuple<fchar,fshort,fint,fdouble>,fint>)
+              , double
+              );
+
+  TTS_TYPE_IS ( (kumi::result::prod_t<kumi::tuple<fchar,fshort,fint,fdouble>,fint>)
+              , double
+              );
+
+  TTS_TYPE_IS ( (kumi::result::bit_or_t<kumi::tuple<fshort,fsize_t,fint>,fchar>)
+              , std::size_t
+              );
+
+  TTS_TYPE_IS ( (kumi::result::bit_and_t<kumi::tuple<fshort,fsize_t,fint>,fchar>)
+              , std::size_t
+              );
+
+  TTS_TYPE_IS ( (kumi::result::sum_t<kumi::tuple<fchar,fshort,fint,fdouble>>)
+              , double
+              );
+
+  TTS_TYPE_IS ( (kumi::result::prod_t<kumi::tuple<fchar,fshort,fint,fdouble>>)
+              , double
+              );
+
+  TTS_TYPE_IS ( (kumi::result::bit_or_t<kumi::tuple<fshort,fsize_t,fint>>)
+              , std::size_t
+              );
+
+  TTS_TYPE_IS ( (kumi::result::bit_and_t<kumi::tuple<fshort,fsize_t,fint>>)
+              , std::size_t
+              );
+};
+
 TTS_CASE("Check tuple::sum behavior")
 {
   constexpr auto t = kumi::tuple {2., 1, short {55}, 'z'};

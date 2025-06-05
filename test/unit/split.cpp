@@ -32,6 +32,36 @@ TTS_CASE("Check result::split<Tuple,I> behavior")
               );
 };
 
+TTS_CASE("Check result::split<Tuple,I> behavior on named tuples")
+{
+  using namespace kumi::literals;
+  
+  using fchar   = decltype("x"_m = 'x'      );
+  using fshort  = decltype("y"_m = short{1} );
+  using fint    = decltype("z"_m = 1        );
+  using fdouble = decltype("t"_m = 2.       );
+
+  TTS_TYPE_IS ( (kumi::result::split_t<kumi::tuple<fchar,fshort,fint,fdouble>, 0>)
+              , (kumi::tuple<kumi::tuple<>,kumi::tuple<char,short,int,double>>)
+              );
+
+  TTS_TYPE_IS ( (kumi::result::split_t<kumi::tuple<fchar,fshort,fint,fdouble>, 1>)
+              , (kumi::tuple<kumi::tuple<char>,kumi::tuple<short,int,double>>)
+              );
+
+  TTS_TYPE_IS ( (kumi::result::split_t<kumi::tuple<fchar,fshort,fint,fdouble>, 2>)
+              , (kumi::tuple<kumi::tuple<char,short>,kumi::tuple<int,double>>)
+              );
+
+  TTS_TYPE_IS ( (kumi::result::split_t<kumi::tuple<fchar,fshort,fint,fdouble>, 3>)
+              , (kumi::tuple<kumi::tuple<char,short,int>,kumi::tuple<double>>)
+              );
+
+  TTS_TYPE_IS ( (kumi::result::split_t<kumi::tuple<fchar,fshort,fint,fdouble>, 4>)
+              , (kumi::tuple<kumi::tuple<char,short,int,double>,kumi::tuple<>>)
+              );
+};
+
 TTS_CASE("Check tuple::split behavior")
 {
   using namespace kumi::literals;

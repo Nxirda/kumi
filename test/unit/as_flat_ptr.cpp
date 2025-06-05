@@ -26,8 +26,10 @@ TTS_CASE("Check tuple::as_flat_ptr function behavior")
 TTS_CASE("Check tuple::as_flat_ptr function behavior on named tuple")
 {
   using namespace kumi::literals;
-  auto t = kumi::tuple{"x"_m = 3.25f, "y"_m = kumi::tuple {"z"_m = 2., 
-      "t"_m = kumi::tuple {"l"_m = 2., "f"_m = 1, "g"_m = short {55}}, "h"_m = short {55}}, "i"_m = 'a'};
+  auto t =  kumi::tuple{"x"_m = 3.25f, "y"_m = kumi::tuple {"z"_m = 2., 
+            "t"_m = kumi::tuple {"l"_m = 2., "f"_m = 1, "g"_m = short {55}}
+            , "h"_m = short {55}}, "i"_m = 'a'};
+
   auto f = kumi::as_flat_ptr(t);
 
   TTS_EQUAL(get<0>(f), &                get<0>(t)   );

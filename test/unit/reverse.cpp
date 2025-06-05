@@ -16,6 +16,19 @@ TTS_CASE("Check result::reverse<Tuple> behavior")
   TTS_TYPE_IS( (kumi::result::reverse_t<tuple_t>), (kumi::tuple<double,int,short,char>) );
 };
 
+TTS_CASE("Check result::reverse<Tuple> behavior on named tuples")
+{
+  using namespace kumi::literals;
+  using fchar   = decltype("x"_m = 'x'      );
+  using fshort  = decltype("y"_m = short{1} );
+  using fint    = decltype("z"_m = 1        );
+  using fdouble = decltype("t"_m = 1.       );
+
+  using tuple_t = kumi::tuple<fchar,fshort,fint,fdouble>;
+
+  TTS_TYPE_IS( (kumi::result::reverse_t<tuple_t>), (kumi::tuple<double,int,short,char>) );
+};
+
 TTS_CASE("Check reverse(tuple) behavior")
 {
   auto t = kumi::tuple {1, 2., 3.4f, '5'};

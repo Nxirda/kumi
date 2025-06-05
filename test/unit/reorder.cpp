@@ -19,6 +19,23 @@ TTS_CASE("Check result::reorder<Tuple,I...> behavior")
   TTS_TYPE_IS( (kumi::result::reorder_t<tuple_t>        ), kumi::tuple<>                        );
 };
 
+TTS_CASE("Check result::reorder<Tuple,I...> behavior on named tuples")
+{
+  using namespace kumi::literals;
+  using fchar   = decltype("x"_m = 'x'      );
+  using fshort  = decltype("y"_m = short{1} );
+  using fint    = decltype("z"_m = 1        );
+  using fdouble = decltype("t"_m = 2.       );
+
+  using tuple_t = kumi::tuple<fchar,fshort,fint,fdouble>;
+  using base_t  = kumi::tuple<char, short, int, double>;  
+
+  TTS_TYPE_IS( (kumi::result::reorder_t<tuple_t,0,1,2,3>), base_t                               );
+  TTS_TYPE_IS( (kumi::result::reorder_t<tuple_t,1,2,3,0>), (kumi::tuple<short,int,double,char>) );
+  TTS_TYPE_IS( (kumi::result::reorder_t<tuple_t,3,3>    ), (kumi::tuple<double,double>)         );
+  TTS_TYPE_IS( (kumi::result::reorder_t<tuple_t>        ), kumi::tuple<>                        );
+};
+
 TTS_CASE("Check reorder<I...>(tuple) behavior")
 {
   {

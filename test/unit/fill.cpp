@@ -9,6 +9,24 @@
 #include <kumi/tuple.hpp>
 #include <tts/tts.hpp>
 
+TTS_CASE("Check result::fill<Size, Tuple> behavior")
+{
+    using namespace kumi::literals;
+    using tpl_t = kumi::tuple<int, int, int>;
+
+    TTS_TYPE_IS((kumi::result::fill_t<3_c, int>) , (tpl_t));
+};
+
+TTS_CASE("Check result::fill<Size, Tuple> behavior on named tuples")
+{
+  using namespace kumi::literals;
+    
+  using fint    = decltype("z"_m = 1    );
+
+  using tpl_t  = kumi::tuple<fint, fint, fint>;
+  TTS_TYPE_IS((kumi::result::fill_t<3_c, fint>) , (tpl_t));
+};
+
 TTS_CASE("Check runtime kumi::fill behavior")
 {
   using namespace kumi::literals;

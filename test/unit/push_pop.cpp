@@ -61,6 +61,25 @@ TTS_CASE("Check kumi::push_back/pop_back type computation")
   TTS_TYPE_IS((pop_back_t<kumi::tuple<int,float,char>>),(kumi::tuple<int,float>));
 };
 
+TTS_CASE("Check kumi::push_back/pop_back type computation on named tuples")
+{
+  using namespace kumi::result;
+  using namespace kumi::literals;
+
+  using fint    = decltype("x"_m = 1    );
+  using ffloat  = decltype("y"_m = 2.f  );
+  using fchar   = decltype("z"_m = 'x'  );
+
+  TTS_TYPE_IS((push_back_t<kumi::tuple<>,fint>)             , kumi::tuple<int>);
+  TTS_TYPE_IS((push_back_t<kumi::tuple<ffloat>,fint>)       , (kumi::tuple<float,int>));
+  TTS_TYPE_IS((push_back_t<kumi::tuple<ffloat,fchar>,fint>) , (kumi::tuple<float,char,int>));
+
+  TTS_TYPE_IS((pop_back_t<kumi::tuple<>>)                   , kumi::tuple<>);
+  TTS_TYPE_IS((pop_back_t<kumi::tuple<ffloat>>)             , kumi::tuple<>);
+  TTS_TYPE_IS((pop_back_t<kumi::tuple<ffloat,fchar>>)       , kumi::tuple<float>);
+  TTS_TYPE_IS((pop_back_t<kumi::tuple<fint,ffloat,fchar>>)  , (kumi::tuple<int,float>));
+};
+
 TTS_CASE("Check kumi::push_back/pop_back function behavior")
 {
   TTS_EQUAL( (kumi::push_back(kumi::tuple{},4)), kumi::tuple{4} );

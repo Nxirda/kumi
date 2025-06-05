@@ -75,14 +75,15 @@ TTS_CASE("Check result::apply<F,Tuple> behavior on named tuple")
 {
   using namespace kumi::literals; 
 
+  using fchar   = decltype("x"_m = 'x'       );
+  using fshort  = decltype("y"_m = short{55} );
+  using fint    = decltype("z"_m = 1         );
+  using fdouble = decltype("t"_m = 2.        );
+  
   auto lambda = [](auto... m) { return (m + ...); };
   using func_t = decltype(lambda);
-  using field1 = decltype("x"_m = 'x'       );
-  using field2 = decltype("y"_m = short{55} );
-  using field3 = decltype("z"_m = 1         );
-  using field4 = decltype("t"_m = 2.        );
 
-  TTS_TYPE_IS((kumi::result::apply_t<func_t,kumi::tuple<field1,field2,field3,field4>>), double);
+  TTS_TYPE_IS((kumi::result::apply_t<func_t,kumi::tuple<fchar,fshort,fint,fdouble>>), double);
 };
 
 TTS_CASE("Check apply behavior")
