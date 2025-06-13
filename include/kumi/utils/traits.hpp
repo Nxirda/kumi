@@ -335,5 +335,5 @@ namespace kumi
   inline constexpr auto all_unique_names_v = all_unique_names_t<Ts...>::value;
    
   // Forward declaration
-  template<typename... Ts> struct tuple;
+  //template<typename... Ts> struct tuple;
 }

@@ -252,7 +252,7 @@ namespace kumi
 
       auto const order = [&]<typename Index>(Index i)
       {
-        auto y_less_x_prev  = rhs[i]  < lhs[i];
+        auto y_less_x_prev  = rhs[i] < lhs[i];
         auto x_less_y       = lhs[index_t<Index::value+1>{}] < rhs[index_t<Index::value+1>{}];
         return x_less_y && !y_less_x_prev;
       };
@@ -593,6 +593,6 @@ namespace kumi
 
 #include <kumi/algorithm.hpp>
 
-#undef KUMI_FWD
+//#undef KUMI_FWD
 #endif
 
