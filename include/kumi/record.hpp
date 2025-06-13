@@ -103,9 +103,8 @@ namespace kumi
     }; 
 
     template<typename... Us>
-    requires( fieldwise_convertible<record, record<Us...>> ) 
-    constexpr record &
-    operator=(record<Us...> const &other)
+    requires( equally_named<record, record<Us...>>  && _::fieldwise_convertible<record, record<Us...>> ) 
+    constexpr record &operator=(record<Us...> const &other)
     { 
         [&]<std::size_t...I>(std::index_sequence<I...>)
         {
@@ -116,9 +115,8 @@ namespace kumi
 
     /// @overload
     template<typename... Us>
-    requires( fieldwise_convertible<record, record<Us...>> ) 
-    constexpr record &
-    operator=(record<Us...> &&other)
+    requires( equally_named<record, record<Us...>> && _::fieldwise_convertible<record, record<Us...>> ) 
+    constexpr record &operator=(record<Us...> &&other)
     {
         [&]<std::size_t...I>(std::index_sequence<I...>)
         {
@@ -153,7 +151,7 @@ namespace kumi
     {
       // lexicographical order is defined as
       // (v0 < w0) || ... andnot(wi < vi, vi+1 < wi+1) ... || andnot(wn-1 < vn-1, vn < wn);
-      // comparison order is based on lhs order
+      // comparison order is based on lhs order, will see what to do here
       using lhs_type    = std::remove_cvref_t<decltype(lhs)>;
       auto lhs_names    = lhs_type::names();
       auto first        = get<0>(lhs_names);

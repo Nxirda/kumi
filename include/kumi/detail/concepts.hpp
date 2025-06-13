@@ -69,6 +69,77 @@ namespace kumi::_
     T {args...};
   };
 
+  //==============================================================================================
+  // Helper concepts for construction checks of records
+  //==============================================================================================
+  template<typename From, typename To> struct is_fieldwise_constructible;
+  template<typename From, typename To> struct is_fieldwise_convertible;
+  template<typename From, typename To> struct is_fieldwise_ordered;
+
+  template<typename Field, typename... Ts>
+  struct get_field_by_name
+  {
+    using type = kumi::unit; 
+  };
+
+  template<typename Field, typename First, typename... Ts>
+  struct get_field_by_name<Field, First, Ts...>
+  {
+      using raw_Field = std::remove_cvref_t<Field>;
+      using raw_First = std::remove_cvref_t<First>;
+
+      using type = std::conditional_t<
+                        raw_Field::name == raw_First::name,  
+                        First, 
+                        typename get_field_by_name<Field, Ts...>::type>;
+  };
+
+  template<typename Field, typename... Ts>
+  using get_field_by_name_t = typename get_field_by_name<Field, Ts...>::type;
+
+  template<template<class...> class Box, typename... From, typename... To>
+  struct is_fieldwise_convertible<Box<From...>, Box<To...>>
+  {     
+      static constexpr bool value = []<std::size_t...I>(std::index_sequence<I...>)
+      {
+        return ( [&]()
+        {
+          using F_field = std::remove_cvref_t<From>;
+          using T_field = std::remove_cvref_t<get_field_by_name_t<From, To...>>;
+          return kumi::convertible_to<typename F_field::type, typename T_field::type>;
+        }() && ...);
+      }(std::make_index_sequence<sizeof...(From)>{}); 
+  };
+
+  template<template<class...> class Box, typename... From, typename... To>
+  struct is_fieldwise_constructible<Box<From...>, Box<To...>>
+  {
+    static constexpr bool value = []<std::size_t...I>(std::index_sequence<I...>)
+      {
+        return ( [&]()
+        {
+          using F_field = std::remove_cvref_t<From>;
+          using T_field = std::remove_cvref_t<get_field_by_name_t<From, To...>>;
+          return std::is_constructible_v<typename F_field::type, typename T_field::type>;
+        }() && ...);
+      }(std::make_index_sequence<sizeof...(From)>{}); 
+  };
+
+  template<template<class...> class Box, typename... From, typename... To>
+  struct is_fieldwise_ordered<Box<From...>, Box<To...>>
+  {
+    static constexpr bool value = (... && ordered<From,To> );
+  };
+
+  template<typename From, typename To>
+  concept fieldwise_convertible = is_fieldwise_convertible<From, To>::value;
+
+  template<typename From, typename To>
+  concept fieldwise_constructible = is_fieldwise_constructible<From, To>::value;
+
+  template<typename From, typename To>
+  concept fieldwise_ordered = is_fieldwise_ordered<From, To>::value;
+
   //================================================================================================
   // Concept machinery to make our algorithms SFINAE friendly
   //================================================================================================

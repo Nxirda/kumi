@@ -126,7 +126,6 @@ namespace kumi
   template<typename T>
   inline constexpr auto is_homogeneous_v = is_homogeneous<T>::value;
 
-
   //================================================================================================
   //! @ingroup traits
   //! @brief Checks if a type is a kumi::field_capture 

@@ -194,62 +194,6 @@ namespace kumi
   template<auto Name, typename... Ts>
   concept contains_field = (_::get_name_index<Name, Ts...>() < sizeof...(Ts));
 
-  //==============================================================================================
-  // Helper concepts for construction checks of records
-  //==============================================================================================
-  template<typename From, typename To> struct is_fieldwise_constructible;
-  template<typename From, typename To> struct is_fieldwise_convertible;
-  template<typename From, typename To> struct is_fieldwise_ordered;
-    
-  // Extract field from From -> get type -> Extract matching field from to -> test convertible
-  template<template<class...> class Box, typename... From, typename... To>
-  struct is_fieldwise_convertible<Box<From...>, Box<To...>>
-  {     
-      static constexpr bool value = []<std::size_t...I>(std::index_sequence<I...>)
-      {
-        return ( [&]()
-        {
-          using F_field = std::remove_cvref_t<From>;
-          using T_field = std::remove_cvref_t<decltype(_::get_name_type<F_field::name, To...>())>;
-          return kumi::convertible_to<F_field, T_field>;
-        }() && ...);
-      }(std::make_index_sequence<sizeof...(From)>{}); 
-  };
-
-  template<template<class...> class Box, typename... From, typename... To>
-  struct is_fieldwise_constructible<Box<From...>, Box<To...>>
-  {
-    static constexpr bool value = []<std::size_t...I>(std::index_sequence<I...>)
-      {
-        return ( [&]()
-        {
-          using F_field = std::remove_cvref_t<From>;
-          using T_field = std::remove_cvref_t<decltype(_::get_name_type<F_field::name, To...>())>;
-          return std::is_constructible_v<F_field, T_field>;
-        }() && ...);
-      }(std::make_index_sequence<sizeof...(From)>{}); 
-
-        //(... && std::is_constructible_v<To, From>);
-  };
-
-  template<typename From, typename To>
-  concept ordered = requires(From const& a, To const& b){ {a < b}; };
-
-  template<template<class...> class Box, typename... From, typename... To>
-  struct is_fieldwise_ordered<Box<From...>, Box<To...>>
-  {
-    static constexpr bool value = (... && ordered<From,To> );
-  };
-
-  template<typename From, typename To>
-  concept fieldwise_convertible = is_fieldwise_convertible<From, To>::value;
-
-  template<typename From, typename To>
-  concept fieldwise_constructible = is_fieldwise_constructible<From, To>::value;
-
-  template<typename From, typename To>
-  concept fieldwise_ordered = is_fieldwise_ordered<From, To>::value;
-
   namespace _
   { 
     template<auto Name, typename T>
@@ -272,7 +216,21 @@ namespace kumi
             return size_v<T>; 
         }(std::make_index_sequence<size_v<T>>{});
     }
-
+    
+    template<typename T, typename U>
+    constexpr auto has_same_names()
+    {
+      return []<std::size_t...I>(std::index_sequence<I...>)
+      {
+        return ( [&]()
+        {
+          using T_field         = std::remove_cvref_t<member_t<I, T>>;
+          constexpr auto U_idx  = index_of_name<T_field::name, U>();
+          return U_idx != size_v<T>;
+        }() && ...);
+      }(std::make_index_sequence<size<T>::value>{}); 
+    }
+    
     template<typename T, typename U>
     constexpr auto check_named_equality()
     {
@@ -291,6 +249,9 @@ namespace kumi
     }
   }
 
+  template<typename T, typename U>
+  concept equally_named = (size_v<T> == size_v<U>) && _::has_same_names<T,U>(); 
+
   //================================================================================================
   //! @ingroup concepts
   //! @brief Concept specifying if a type is comparable for each of its components
@@ -301,7 +262,7 @@ namespace kumi
   //================================================================================================
   //PPbly need a same_names
   template<typename T, typename U>
-  concept named_equality_comparable = (size_v<T> == size_v<U>) && _::check_named_equality<T,U>(); 
+  concept named_equality_comparable = equally_named<T,U> && _::check_named_equality<T,U>(); 
 
 
   /// Forward declaration 
