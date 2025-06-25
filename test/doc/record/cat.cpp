@@ -18,10 +18,6 @@ int main()
 
   std::cout << a << " " << b << " " << c << "\n";
   std::cout << abc << "\n";
-    
-  using x = kumi::common_product_type_or_t<kumi::tuple, std::remove_cvref_t<decltype(a)>, std::remove_cvref_t<decltype(b)>, std::remove_cvref_t<decltype(c)>>;
-  x r;
-  void *ptr = r;
-  //void *ptr = abc;
-  //static_assert(std::is_same_v<kumi::template_of_t<decltype(a)>, kumi::template_of_t<decltype(abc)>>);
+
+  void *ptr = abc;
 }

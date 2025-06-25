@@ -14,7 +14,6 @@
 
 namespace kumi
 {
-  template<> struct record<> {};
   //================================================================================================
   //! @ingroup record
   //! @class record
@@ -29,7 +28,7 @@ namespace kumi
   //! @tparam Ts Sequence of fields stored inside kumi::record.
   //================================================================================================
   template<typename... Ts> 
-  requires ( is_fully_named<Ts...> && uniquely_named<Ts...> )
+  requires ( sizeof...(Ts) == 0 || ( is_fully_named<Ts...> && uniquely_named<Ts...> ))
   struct record<Ts...>
   {
     using is_product_type = void;
