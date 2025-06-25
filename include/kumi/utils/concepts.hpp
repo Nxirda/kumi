@@ -229,8 +229,4 @@ namespace kumi
   //================================================================================================
   template<typename T, typename U>
   concept named_equality_comparable = equally_named<T,U> && _::check_named_equality_v<T,U>;
-
-  // Forward declaration
-  template<typename... Ts> 
-  requires ( is_fully_named<Ts...> && uniquely_named<Ts...> ) struct record;
 }

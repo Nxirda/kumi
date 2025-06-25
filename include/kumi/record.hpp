@@ -14,6 +14,7 @@
 
 namespace kumi
 {
+  template<> struct record<> {};
   //================================================================================================
   //! @ingroup record
   //! @class record
@@ -29,7 +30,7 @@ namespace kumi
   //================================================================================================
   template<typename... Ts> 
   requires ( is_fully_named<Ts...> && uniquely_named<Ts...> )
-  struct record
+  struct record<Ts...>
   {
     using is_product_type = void;
     using binder_t = _::make_binder_t<std::make_integer_sequence<int,sizeof...(Ts)>, Ts...>;
@@ -319,7 +320,7 @@ namespace kumi
                                                          record const &t) noexcept
     {
       os << "( ";
-      kumi::for_each([&os](auto const &e) { os << e << " "; }, t);
+      kumi::for_each([&os](auto const &e) { os << e << " "; }, kumi::zip(t.names(), t));
       os << ")";
 
       return os;

@@ -418,13 +418,13 @@ namespace kumi
   template<template<class...> class Base, typename... Ts>
   struct common_product_type_or
   {
-    static constexpr auto value = ( []
+    static constexpr auto value = ( []()
     {
       if constexpr(std::is_same_v<common_product_type_t<Ts...>, kumi::unit>)
         return Base<>{};
       else
         return common_product_type_v<Ts...>;
-    });
+    }() );
 
     using type = decltype(value);
   };
@@ -437,4 +437,6 @@ namespace kumi
 
   // Forward declaration
   template<typename... Ts> struct tuple;
+  template<typename... Ts> struct record;
+
 }
