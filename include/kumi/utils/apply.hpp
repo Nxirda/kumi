@@ -7,6 +7,8 @@
 //==================================================================================================
 #pragma once
 
+#include <kumi/detail/builder.hpp>
+
 namespace kumi
 {
 
@@ -86,6 +88,37 @@ namespace kumi
         return KUMI_FWD(f)(get<I>(KUMI_FWD(t))...);
       }
       (std::make_index_sequence<size<Tuple>::value>());
+  }
+  ///
+  template<typename To, product_type From>
+  [[nodiscard]] inline constexpr decltype(auto) rebind(From&& t)
+  {
+    using Base = std::remove_cvref_t<From>;
+    return [&]<std::size_t... I>(std::index_sequence<I...>)
+    {
+      using type = builder_t<std::remove_cvref_t<To>, std::tuple_element_t<I, Base>...>;
+      return type{ ([&]<std::size_t J>(std::integral_constant<std::size_t, J>)
+          {
+              using current_t   = std::remove_cvref_t<std::tuple_element_t<J, Base>>;
+              using get_t       = std::remove_cvref_t<kumi::member_t<J, Base>>;
+              if constexpr ( is_field_capture_v<current_t> && !is_field_capture_v<get_t>)
+              {
+                return field_name<current_t::name>{} = get<J>(KUMI_FWD(t));
+              }
+              else
+                return get<J>(KUMI_FWD(t));
+          }(std::integral_constant<std::size_t, I>{}))...
+      };
+    }
+    (std::make_index_sequence<kumi::size_v<From>>{});
+  }
+
+  template<typename Function, product_type Tuple>
+  constexpr decltype(auto) apply_typped(Function &&f, Tuple &&t) 
+  {
+    auto tuple    = rebind<kumi::tuple<>>(KUMI_FWD(t));
+    auto result   = apply(KUMI_FWD(f), KUMI_FWD(tuple));
+    return rebind<std::remove_cvref_t<Tuple>>(KUMI_FWD(result));
   }
 
   namespace result

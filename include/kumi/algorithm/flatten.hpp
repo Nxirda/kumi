@@ -7,6 +7,8 @@
 //==================================================================================================
 #pragma once
 
+#include <kumi/detail/builder.hpp>
+
 namespace kumi
 {
   //================================================================================================
@@ -37,17 +39,18 @@ namespace kumi
     if constexpr(sized_product_type<Tuple,0>) return ts;
     else
     {
-      return kumi::apply( [](auto&&... m)
+      return kumi::apply_typped( [](auto&&... m)
                           {
                             auto v_or_t = []<typename V>(V&& v)
                             {
-                              if constexpr(product_type<V>) return KUMI_FWD(v);
-                              else                          return kumi::tuple{KUMI_FWD(v)};
+                                   if constexpr (product_type<V>) return KUMI_FWD(v);
+                              else if constexpr ( is_field_capture_v<V> && product_type<decltype(unwrap_field_value(v))> ) return KUMI_FWD(unwrap_field_value(v));
+                              else                          return kumi::tuple{KUMI_FWD(v)};                            
                             };
 
                             return cat( v_or_t(KUMI_FWD(m))... );
                           }
-                        , ts
+                        , ts 
                         );
     }
   }

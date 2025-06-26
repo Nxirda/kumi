@@ -68,7 +68,7 @@ namespace kumi
     static constexpr auto make(Args&&... args)
     {
       return Box{ KUMI_FWD(args)... };
-    } 
+    }
   };
 
   template <typename T, typename... Args>

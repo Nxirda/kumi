@@ -319,7 +319,7 @@ namespace kumi
                                                          record const &t) noexcept
     {
       os << "( ";
-      kumi::for_each([&os](auto const &e) { os << e << " "; }, kumi::zip(t.names(), t));
+      kumi::for_each([&os](auto const &e) { os << e << " "; },  t);
       os << ")";
 
       return os;
@@ -348,7 +348,7 @@ namespace kumi
   //! ## Example:
   //! @include doc/record_tie.cpp
   //================================================================================================
-  template<typename... Ts> KUMI_TRIVIAL_NODISCARD constexpr record<Ts &...> tie(Ts &...ts) { return {ts...}; }
+  //template<typename... Ts> KUMI_TRIVIAL_NODISCARD constexpr record<Ts &...> tie(Ts &...ts) { return {ts...}; }
 
   //================================================================================================
   //! @ingroup record
@@ -367,10 +367,10 @@ namespace kumi
   //! ## Example:
   //! @include doc/forward_as_record.cpp
   //================================================================================================
-  template<typename... Ts> KUMI_TRIVIAL_NODISCARD constexpr record<Ts &&...> forward_as_record(Ts &&...ts)
+  /*template<typename... Ts> KUMI_TRIVIAL_NODISCARD constexpr record<Ts &&...> forward_as_record(Ts &&...ts)
   {
     return {KUMI_FWD(ts)...};
-  }
+  }*/
 
   //================================================================================================
   //! @ingroup record
