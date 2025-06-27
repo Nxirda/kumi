@@ -35,6 +35,16 @@ namespace kumi
 
   //================================================================================================
   //! @ingroup concepts
+  //! @brief Concept specifying a type follows the Record Type semantic
+  //!
+  //! A type `T` models `kumi::record_type` if it opts in for the Record Type semantic. 
+  //! A `kumi::record_type` also models `kumi::product_type`
+  //================================================================================================
+  template<typename T>
+  concept record_type = product_type<T> && is_record_type<std::remove_cvref_t<T>>::value;
+  
+  //================================================================================================
+  //! @ingroup concepts
   //! @brief Concept specifying a type follows the Product Type semantic and has a known size
   //!
   //! A type `T` models `kumi::sized_product_type<N>` if it models `kumi::product_type` and has

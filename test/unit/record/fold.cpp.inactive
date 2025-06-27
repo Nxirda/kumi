@@ -7,23 +7,31 @@
 //==================================================================================================
 #define TTS_MAIN
 #include <array>
-#include <kumi/tuple.hpp>
+#include <kumi/record.hpp>
 #include <tts/tts.hpp>
 #include <vector>
 
 
 TTS_CASE("Check result::fold_right/fold_left<...> behavior")
 {
+  using namespace kumi::literals;
+
   auto lambda = [](auto a, auto m) { return a + sizeof(m); };
   using func_t = decltype(lambda);
 
-  TTS_TYPE_IS((kumi::result::fold_right_t<func_t,kumi::tuple<char,short,int,double>,int>) , std::size_t);
-  TTS_TYPE_IS((kumi::result::fold_left_t<func_t,kumi::tuple<char,short,int,double>,int>)  , std::size_t);
+  using char_f      = kumi::field_capture<"a", char>;
+  using short_f     = kumi::field_capture<"b", short>;
+  using int_f       = kumi::field_capture<"c", int>;
+  using double_f    = kumi::field_capture<"d", double>;
 
-  TTS_TYPE_IS((kumi::result::fold_right_t<func_t,kumi::tuple<char,short,int,double>>) , std::size_t);
-  TTS_TYPE_IS((kumi::result::fold_left_t<func_t,kumi::tuple<char,short,int,double>>)  , std::size_t);
+  TTS_TYPE_IS((kumi::result::fold_right_t<func_t,kumi::record<char_f,short_f,int_f,double_f>,int>) , std::size_t);
+  TTS_TYPE_IS((kumi::result::fold_left_t<func_t,kumi::record<char_f,short_f,int_f,double_f>,int>)  , std::size_t);
+
+  TTS_TYPE_IS((kumi::result::fold_right_t<func_t,kumi::record<char_f,short_f,int_f,double_f>>) , std::size_t);
+  TTS_TYPE_IS((kumi::result::fold_left_t<func_t,kumi::record<char_f,short_f,int_f,double_f>>)  , std::size_t);
 };
 
+/*
 TTS_CASE("Check tuple::fold_right behavior")
 {
   auto t = kumi::tuple {2., 1, short {55}, 'z'};
@@ -119,3 +127,4 @@ TTS_CASE("Check tuple::fold_left constexpr behavior")
 
   TTS_CONSTEXPR_EQUAL(accumulated, (std::array<int, 4> {1, 2, 4, 8}));
 };
+*/

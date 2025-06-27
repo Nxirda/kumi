@@ -36,23 +36,24 @@ namespace kumi
   //================================================================================================
   template<product_type Tuple> [[nodiscard]] constexpr auto flatten(Tuple const &ts)
   {
-    if constexpr(sized_product_type<Tuple,0>) return ts;
-    else
+    using type = std::remove_cvref_t<Tuple>;
+    auto flattener = [&](auto&&... m)
     {
-      return kumi::apply_typped( [](auto&&... m)
-                          {
-                            auto v_or_t = []<typename V>(V&& v)
-                            {
-                                   if constexpr (product_type<V>) return KUMI_FWD(v);
-                              else if constexpr ( is_field_capture_v<V> && product_type<decltype(unwrap_field_value(v))> ) return KUMI_FWD(unwrap_field_value(v));
-                              else                          return kumi::tuple{KUMI_FWD(v)};                            
-                            };
+      auto v_or_t = []<typename V>(V&& v)
+      {
+        if constexpr ( product_type<V> )  
+          return KUMI_FWD(v);
+        else if constexpr ( is_field_capture_v<V> && product_type<decltype(unwrap_field_value(v))> )  
+          return unwrap_field_value(KUMI_FWD(v));        
+        else  
+          return builder<type>::make(KUMI_FWD(v));                        
+      };
+      return builder<type>::make( cat(v_or_t(KUMI_FWD(m))...));
+    };
 
-                            return cat( v_or_t(KUMI_FWD(m))... );
-                          }
-                        , ts 
-                        );
-    }
+         if constexpr(sized_product_type<Tuple,0>)  return ts;
+    else if constexpr ( record_type<Tuple> )        return kumi::apply(flattener, from_record<as_tuple_t<type>>(ts));     
+    else                                            return kumi::apply(flattener, ts);
   }
 
   //================================================================================================
@@ -85,46 +86,53 @@ namespace kumi
   //================================================================================================
   template<product_type Tuple, typename Func>
   [[nodiscard]] constexpr auto flatten_all(Tuple&& ts, Func&& f)
-  {
-    if constexpr(sized_product_type<Tuple,0>) return KUMI_FWD(ts);
-    else
+  { 
+    using type = std::remove_cvref_t<Tuple>;
+    auto flattener = [&](auto&&... m)
     {
-      return kumi::apply( [&](auto&&... m)
-                          {
-                            auto v_or_t = [&]<typename V>(V&& v)
-                            {
-                              if constexpr(product_type<V>)
-                                return flatten_all(KUMI_FWD(v),KUMI_FWD(f));
-                              else
-                                return kumi::tuple{KUMI_FWD(f)(KUMI_FWD(v))};
-                            };
+      auto v_or_t = [&]<typename V>(V&& v)
+      {
+        if constexpr(product_type<V>)
+          return flatten_all(KUMI_FWD(v),KUMI_FWD(f));
+        else if constexpr ( is_field_capture_v<V> )
+        {
+           if constexpr ( product_type<decltype(unwrap_field_value(v))> )  
+            return flatten_all( unwrap_field_value(KUMI_FWD(v)), KUMI_FWD(f) );      
+          else
+            return builder<type>::make( KUMI_FWD(f)(unwrap_field_value(KUMI_FWD(v))));
+        }
+        else
+          return builder<type>::make( KUMI_FWD(f)(KUMI_FWD(v)) );    
+      };
+      return builder<type>::make( cat(v_or_t(KUMI_FWD(m))...));
+    };
 
-                            return cat( v_or_t(KUMI_FWD(m))... );
-                          }
-                        , ts
-                        );
-    }
+         if constexpr(sized_product_type<Tuple,0>)  return ts;
+    else if constexpr ( record_type<Tuple> )        return kumi::apply(flattener, from_record<as_tuple_t<type>>(ts));
+    else                                            return kumi::apply(flattener, ts);
   }
 
   /// @overload
   template<product_type Tuple> [[nodiscard]] constexpr auto flatten_all(Tuple&& ts)
   {
-    if constexpr(sized_product_type<Tuple,0>) return ts;
-    else
+    using type = std::remove_cvref_t<Tuple>;
+    auto flattener = [&](auto&&... m)
     {
-      return kumi::apply( [](auto&&... m)
-                          {
-                            auto v_or_t = []<typename V>(V&& v)
-                            {
-                              if constexpr(product_type<V>) return flatten_all(KUMI_FWD(v));
-                              else                          return kumi::tuple{KUMI_FWD(v)};
-                            };
+      auto v_or_t = []<typename V>(V&& v)
+      {
+        if constexpr(product_type<V>) 
+          return flatten_all(KUMI_FWD(v));
+        else if constexpr ( is_field_capture_v<V> && product_type<decltype(unwrap_field_value(v))> )  
+          return  flatten_all(unwrap_field_value(KUMI_FWD(v)));       
+        else                          
+          return builder<type>::make(KUMI_FWD(v));
+      };
+      return builder<type>::make( cat(v_or_t(KUMI_FWD(m))...));
+    };
 
-                            return cat( v_or_t(KUMI_FWD(m))... );
-                          }
-                        , ts
-                        );
-    }
+    if constexpr(sized_product_type<Tuple,0>)   return ts;
+    else if constexpr ( record_type<Tuple> )    return kumi::apply(flattener, from_record<as_tuple_t<type>>(ts));
+    else                                        return kumi::apply(flattener, ts);
   }
 
 

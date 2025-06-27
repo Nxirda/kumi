@@ -61,6 +61,14 @@ namespace kumi
     return [&]<std::size_t... I>(std::index_sequence<I...>) { return Type {get<I>(t)...}; }
     (std::make_index_sequence<sizeof...(Ts)>());
   }
+    
+  template<typename Type, typename... Ts>
+  requires(!record_type<Type> && _::implicit_constructible<Type, Ts...>)
+  [[nodiscard]] constexpr auto from_record(record<Ts...> const &t)
+  {
+    return [&]<std::size_t... I>(std::index_sequence<I...>) { return Type {get<I>(t)...}; }
+    (std::make_index_sequence<sizeof...(Ts)>());
+  }
 
   //================================================================================================
   //! @ingroup utility

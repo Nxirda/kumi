@@ -31,7 +31,8 @@ namespace kumi
   requires ( sizeof...(Ts) == 0 || ( is_fully_named<Ts...> && uniquely_named<Ts...> ))
   struct record<Ts...>
   {
-    using is_product_type = void;
+    using is_product_type   = void;
+    using is_record_type    = void;
     using binder_t = _::make_binder_t<std::make_integer_sequence<int,sizeof...(Ts)>, Ts...>;
 
     static constexpr bool is_homogeneous = binder_t::is_homogeneous;
@@ -57,7 +58,7 @@ namespace kumi
     requires(I < sizeof...(Ts))
     KUMI_TRIVIAL constexpr decltype(auto) operator[]([[maybe_unused]] index_t<I> i) &noexcept
     {
-      return unwrap_field_value(_::get_leaf<I>(impl));
+      return _::get_leaf<I>(impl);
     }
 
     /// @overload
@@ -65,7 +66,7 @@ namespace kumi
     requires(I < sizeof...(Ts))
     KUMI_TRIVIAL constexpr decltype(auto) operator[](index_t<I>) &&noexcept
     {
-      return unwrap_field_value(_::get_leaf<I>(static_cast<decltype(impl) &&>(impl)));
+      return _::get_leaf<I>(static_cast<decltype(impl) &&>(impl));
     }
 
     /// @overload
@@ -73,7 +74,7 @@ namespace kumi
     requires(I < sizeof...(Ts))
     KUMI_TRIVIAL constexpr decltype(auto) operator[](index_t<I>) const &&noexcept
     {
-      return unwrap_field_value(_::get_leaf<I>(static_cast<decltype(impl) const &&>(impl)));
+      return _::get_leaf<I>(static_cast<decltype(impl) const &&>(impl));
     }
 
     /// @overload
@@ -81,7 +82,7 @@ namespace kumi
     requires(I < sizeof...(Ts))
     KUMI_TRIVIAL constexpr decltype(auto) operator[](index_t<I>) const &noexcept
     {
-      return unwrap_field_value(_::get_leaf<I>(impl));
+      return _::get_leaf<I>(impl);
     }
  
     //==============================================================================================
@@ -411,6 +412,7 @@ namespace kumi
                 , KUMI_FWD(t)
                 );
   }*/
+
 
   //================================================================================================
   //! @}

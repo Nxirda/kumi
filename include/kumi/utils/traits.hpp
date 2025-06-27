@@ -36,6 +36,24 @@ namespace kumi
 
   //================================================================================================
   //! @ingroup traits
+  //! @brief Opt-in traits for types behaving like a kumi::product_type
+  //!
+  //! To be treated like a tuple, an user defined type must supports structured bindings opt-in to
+  //! kumi::product_type Semantic.
+  //!
+  //! This can be done in two ways:
+  //!   - exposing an internal `is_product_type` type that evaluates to `void`
+  //!   - specializing the `kumi::is_product_type` traits so it exposes a static constant member
+  //!     `value` that evaluates to `true`
+  //!
+  //! ## Example:
+  //! @include doc/adapt.cpp
+  //==============================================================================================
+  template<typename T, typename Enable = void> struct is_record_type : std::false_type {};
+  template<typename T> struct is_record_type<T, typename T::is_record_type> : std::true_type {};
+
+  //================================================================================================
+  //! @ingroup traits
   //! @brief Computes the number of elements of a kumi::product_type
   //!
   //! @tparam T kumi::product_type to inspect

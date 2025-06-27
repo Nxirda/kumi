@@ -62,8 +62,8 @@ namespace kumi
   //! @include doc/apply.cpp
   //================================================================================================
   template<typename Function, product_type Tuple>
-  constexpr decltype(auto) apply(Function &&f, Tuple &&t) noexcept(_::supports_nothrow_apply<Function &&, Tuple &&>)
-  requires _::supports_apply<Function&&, Tuple&&>
+  constexpr decltype(auto) apply(Function &&f, Tuple &&t) //noexcept(_::supports_nothrow_apply<Function &&, Tuple &&>)
+  //requires _::supports_apply<Function&&, Tuple&&>
   {
     if constexpr(sized_product_type<Tuple,0>) return KUMI_FWD(f)();
     else if constexpr (std::is_member_pointer_v<std::decay_t<Function>>)
@@ -82,6 +82,12 @@ namespace kumi
           return (KUMI_FWD(w).*f)(get<I + 1>(KUMI_FWD(t))...);
       }
       (std::make_index_sequence<size<Tuple>::value - 1>());
+    else if constexpr ( record_type<std::remove_cvref_t<Tuple>> )
+      return [&]<std::size_t... I>(std::index_sequence<I...>) -> decltype(auto)
+      {
+        return KUMI_FWD(f)(unwrap_field_value(get<I>(KUMI_FWD(t)))...);
+      }
+      (std::make_index_sequence<size<Tuple>::value>());
     else
       return [&]<std::size_t... I>(std::index_sequence<I...>) -> decltype(auto)
       {
@@ -90,36 +96,15 @@ namespace kumi
       (std::make_index_sequence<size<Tuple>::value>());
   }
   ///
-  template<typename To, product_type From>
-  [[nodiscard]] inline constexpr decltype(auto) rebind(From&& t)
-  {
-    using Base = std::remove_cvref_t<From>;
-    return [&]<std::size_t... I>(std::index_sequence<I...>)
-    {
-      using type = builder_t<std::remove_cvref_t<To>, std::tuple_element_t<I, Base>...>;
-      return type{ ([&]<std::size_t J>(std::integral_constant<std::size_t, J>)
-          {
-              using current_t   = std::remove_cvref_t<std::tuple_element_t<J, Base>>;
-              using get_t       = std::remove_cvref_t<kumi::member_t<J, Base>>;
-              if constexpr ( is_field_capture_v<current_t> && !is_field_capture_v<get_t>)
-              {
-                return field_name<current_t::name>{} = get<J>(KUMI_FWD(t));
-              }
-              else
-                return get<J>(KUMI_FWD(t));
-          }(std::integral_constant<std::size_t, I>{}))...
-      };
-    }
-    (std::make_index_sequence<kumi::size_v<From>>{});
-  }
 
-  template<typename Function, product_type Tuple>
+  
+ /* template<typename Function, product_type Tuple>
   constexpr decltype(auto) apply_typped(Function &&f, Tuple &&t) 
   {
     auto tuple    = rebind<kumi::tuple<>>(KUMI_FWD(t));
     auto result   = apply(KUMI_FWD(f), KUMI_FWD(tuple));
     return rebind<std::remove_cvref_t<Tuple>>(KUMI_FWD(result));
-  }
+  }*/
 
   namespace result
   {
