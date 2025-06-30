@@ -74,7 +74,7 @@ namespace kumi
   //! }
   //! @endcode
   //!
-  //! Computes the return type of a call to kumi::map
+  //! Computes the return type of a call to kumi::inner_product
   //!
   //! ## Example
   //! @include doc/inner_product.cpp
@@ -87,6 +87,19 @@ namespace kumi
                                             ) noexcept
   {
     if constexpr(sized_product_type<S1,0>) return init;
+    else if constexpr ( record_type<S1> || record_type<S2> )
+    {
+      return [&]<std::size_t... I>(std::index_sequence<I...>)
+      {
+        return  (  _::foldable {sum, prod(unwrap_field_value(get<I>(KUMI_FWD(s1))),
+                                          unwrap_field_value(get<I>(KUMI_FWD(s2))))}
+                >> ...
+                >> _::foldable {sum, init}
+                ).value;
+      }
+      (std::make_index_sequence<size<S1>::value>());
+
+    }
     else
     {
       return [&]<std::size_t... I>(std::index_sequence<I...>)
@@ -105,6 +118,13 @@ namespace kumi
   [[nodiscard]] constexpr auto inner_product(S1 const& s1, S2 const& s2, T init) noexcept
   {
     if constexpr(sized_product_type<S1,0>) return init;
+    else if constexpr( record_type<S1> || record_type<S2> )
+    {
+      return [&]<std::size_t... I>(std::index_sequence<I...>)
+      {
+        return (init + ... + (unwrap_field_value(get<I>(s1)) * unwrap_field_value(get<I>(s2))));
+      }(std::make_index_sequence<size<S1>::value>());
+    }
     else
     {
       return [&]<std::size_t... I>(std::index_sequence<I...>)

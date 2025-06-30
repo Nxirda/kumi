@@ -9,6 +9,7 @@
 
 #include <kumi/utils/pp_helpers.hpp>
 #include <kumi/utils/traits.hpp>
+#include <kumi/utils/concepts.hpp>
 #include <kumi/detail/str.hpp>
 
 namespace kumi
@@ -63,20 +64,28 @@ namespace kumi
   //! @brief Extracts the value from a kumi::field_capture or returns the parameter 
   //!
   //! @note If the unqualified type of U is not a field_capture, simply forwards the parameter
-  //! @tparam   U The type to unwrap 
-  //! @param    u A forwarding reference to the input object.
+  //! @tparam   T The type to unwrap 
+  //! @param    t A forwarding reference to the input object.
   //! @return   A forwarded value of the unwrapped object.
   //! @related kumi::field_capture
   //================================================================================================
-  template<typename U>
-  KUMI_TRIVIAL constexpr decltype(auto) unwrap_field_value(U&& u) noexcept
+  template<typename T>
+  KUMI_TRIVIAL constexpr decltype(auto) unwrap_field_value(T&& t) noexcept
   {
-    using T = std::remove_cvref_t<U>;
-    if constexpr ( is_field_capture_v<T> )
-      return _::get_field(KUMI_FWD(u));
+    if constexpr ( is_field_capture_v<std::remove_cvref_t<T>> )
+      return _::get_field(KUMI_FWD(t));
     else 
-      return KUMI_FWD(u);
-  } 
+      return KUMI_FWD(t);
+  }
+
+  template<typename T, typename U>
+  KUMI_TRIVIAL constexpr decltype(auto) unwrap_if_record(U&& u)
+  {
+      if constexpr ( record_type<std::remove_cvref_t<T>> )
+          return unwrap_field_value<U>(KUMI_FWD(u));
+      else
+          return KUMI_FWD(u);
+  }
 
   //================================================================================================
   //! @ingroup tuple 

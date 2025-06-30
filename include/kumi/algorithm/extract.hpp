@@ -100,8 +100,7 @@ namespace kumi
                                     , [[maybe_unused]] index_t<I0> i0
                                     ) noexcept
   {
-    return builder<std::remove_cvref_t<Tuple>>
-            ::make(extract(t,index<0>, index<I0>), extract(t,index<I0>));
+    return kumi::make_tuple(extract(t,index<0>, index<I0>), extract(t,index<I0>));
   }
 
   namespace result

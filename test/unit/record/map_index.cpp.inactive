@@ -6,41 +6,51 @@
 */
 //==================================================================================================
 #define TTS_MAIN
-#include <kumi/tuple.hpp>
+#include <kumi/record.hpp>
 #include <tts/tts.hpp>
 
-TTS_CASE("Check result::map_index<F,Tuple...> behavior")
+TTS_CASE("Check result::map_index<F,record...> behavior")
 {
+  using namespace kumi::literals;
+
+  using char_f      = kumi::field_capture<"a", char>;
+  using short_f     = kumi::field_capture<"b", short>;
+  using int_f       = kumi::field_capture<"c", int>;
+  using double_f    = kumi::field_capture<"d", double>;
+  using float_f     = kumi::field_capture<"d", float>;
+
   auto lambda = [](auto, auto const& m) { return &m; };
   using func_t = decltype(lambda);
 
-  TTS_TYPE_IS ( (kumi::result::map_index_t<func_t,kumi::tuple<char,short,int,double>>)
-              , (kumi::tuple<char const*,short const*,int const*,double const*>)
+  TTS_TYPE_IS ( (kumi::result::map_index_t<func_t,kumi::record<char_f,short_f,int_f,double_f>>)
+              , (kumi::record<kumi::field_capture<"a", char const*>, kumi::field_capture<"b", short const*> 
+                            , kumi::field_capture<"c", int const*> , kumi::field_capture<"d", double const*>>)
               );
 
   auto add = [](auto i, auto a, auto b) { return (a*b)/(i+1.); };
   using add_t = decltype(add);
 
-  TTS_TYPE_IS ( (kumi::result::map_index_t<add_t, kumi::tuple<char,short,int,double>
-                                          , kumi::tuple<char,short,int,float>
+  TTS_TYPE_IS ( (kumi::result::map_index_t<add_t, kumi::record<char_f,short_f,int_f,double_f>
+                                          , kumi::record<char_f,short_f,int_f,float_f>
                                     >
                 )
-              , (kumi::tuple<double,double,double,double>)
+              , (kumi::record<double,double,double,double>)
               );
 };
 
+/*
 TTS_CASE("Check map_index(f, {}) behavior")
 {
   bool was_run = false;
-  auto s = map_index([&](auto, auto m) { was_run = true; return sizeof(m); }, kumi::tuple{});
+  auto s = map_index([&](auto, auto m) { was_run = true; return sizeof(m); }, kumi::record{});
   TTS_EQUAL( s.size(), 0ULL );
   TTS_EXPECT_NOT( was_run );
 };
 
-TTS_CASE("Check map_index(f, tuple) behavior")
+TTS_CASE("Check map_index(f, record) behavior")
 {
   {
-    auto t = kumi::tuple {1, 2., 3.4f, '5'};
+    auto t = kumi::record {1, 2., 3.4f, '5'};
 
     {
       auto s = map_index([](auto i, auto m) { return i+sizeof(m); }, t);
@@ -57,7 +67,7 @@ TTS_CASE("Check map_index(f, tuple) behavior")
     }
 
     {
-      auto u = kumi::tuple {2, 3, 4, 5};
+      auto u = kumi::record {2, 3, 4, 5};
       auto s = map_index([](auto i, auto m, auto n) { return (n+i) * sizeof(m); }, t, u);
 
       auto [s0, s1, s2, s3] = s;
@@ -72,12 +82,13 @@ TTS_CASE("Check map_index(f, tuple) behavior")
     }
   }
 };
+*/
 
 #if 0
-TTS_CASE("Check map_index(f, tuple) constexpr behavior")
+TTS_CASE("Check map_index(f, record) constexpr behavior")
 {
   {
-    constexpr auto t = kumi::tuple {1, 2., 3.4f, '5'};
+    constexpr auto t = kumi::record {1, 2., 3.4f, '5'};
 
     {
       constexpr auto s = map_index([](auto m) { return sizeof(m); }, t);
@@ -89,7 +100,7 @@ TTS_CASE("Check map_index(f, tuple) constexpr behavior")
     }
 
     {
-      constexpr auto u = kumi::tuple {2, 3, 4, 5};
+      constexpr auto u = kumi::record {2, 3, 4, 5};
       constexpr auto s = map_index([](auto m, auto n) { return n * sizeof(m); }, t, u);
 
       TTS_CONSTEXPR_EQUAL(get<0>(s), 2 * sizeof(int));

@@ -28,7 +28,7 @@ namespace kumi
   //================================================================================================
   template<typename Function, product_type Tuple, product_type... Tuples>
   constexpr void for_each(Function f, Tuple&& t, Tuples&&... ts)
-  requires _::supports_call<Function&, Tuple, Tuples...>
+  //requires _::supports_call<Function&, Tuple, Tuples...>
   {
     if constexpr(sized_product_type<Tuple,0>) return;
     else
@@ -38,8 +38,8 @@ namespace kumi
         // clang needs this for some reason
         using std::get;
         [[maybe_unused]] auto call = [&]<typename M>(M)
-                                        { f ( get<M::value>(KUMI_FWD(t))
-                                            , get<M::value>(KUMI_FWD(ts))...
+                                        { f ( unwrap_if_record<Tuple>(get<M::value>(KUMI_FWD(t)))
+                                            , unwrap_if_record<Tuples>(get<M::value>(KUMI_FWD(ts)))...
                                             );
                                         };
 
@@ -76,8 +76,8 @@ namespace kumi
           f
           (
             i,
-            get<i.value>(KUMI_FWD(t)),
-            get<i.value>(KUMI_FWD(ts))...
+            unwrap_if_record<Tuple>(get<i.value>(KUMI_FWD(t))),
+            unwrap_if_record<Tuples>(get<i.value>(KUMI_FWD(ts)))...
           );
       }};
 

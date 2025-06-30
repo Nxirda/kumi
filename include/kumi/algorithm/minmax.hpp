@@ -35,10 +35,10 @@ namespace kumi
   [[nodiscard]] constexpr auto max(T const& t) noexcept
   {
     if constexpr ( !kumi::product_type<T> ) return t;
-    else if constexpr( T::size() == 1 )     return get<0>(t);
+    else if constexpr( T::size() == 1 )     return unwrap_if_record<T>(get<0>(t));
     else
     {
-      auto base = get<0>(t);
+      auto base = unwrap_if_record<T>(get<0>(t));
       return kumi::fold_left( []<typename U>(auto cur, U u)
                               {
                                 return cur > u ? cur : u;
@@ -75,10 +75,10 @@ namespace kumi
   [[nodiscard]] constexpr auto max(T const& t, F f) noexcept
   {
     if constexpr ( !kumi::product_type<T> ) return f(t);
-    else if constexpr( T::size() == 1 )     return f( get<0>(t) );
+    else if constexpr( T::size() == 1 )     return f( unwrap_if_record<T>(get<0>(t)) );
     else
     {
-      auto base = f( get<0>(t) );
+      auto base = f( unwrap_if_record<T>(get<0>(t)) );
       return kumi::fold_left( [f]<typename U>(auto cur, U const& u)
                               {
                                 return cur > f(u) ? cur : f(u);
@@ -169,10 +169,10 @@ namespace kumi
   [[nodiscard]] constexpr auto min(T const& t) noexcept
   {
     if constexpr ( !kumi::product_type<T> ) return t;
-    else if constexpr( T::size() == 1 )     return get<0>(t);
+    else if constexpr( T::size() == 1 )     return unwrap_if_record<T>(get<0>(t));
     else
     {
-      auto base = get<0>(t);
+      auto base = unwrap_if_record<T>(get<0>(t));
       return kumi::fold_left( []<typename U>(auto cur, U u)
                               {
                                 return cur < u ? cur : u;
@@ -209,10 +209,10 @@ namespace kumi
   [[nodiscard]] constexpr auto min(T const& t, F f) noexcept
   {
     if constexpr ( !kumi::product_type<T> ) return f(t);
-    else if constexpr( T::size() == 1 )     return f( get<0>(t) );
+    else if constexpr( T::size() == 1 )     return f( unwrap_if_record<T>(get<0>(t)) );
     else
     {
-      auto base = f( get<0>(t) );
+      auto base = f( unwrap_if_record<T>(get<0>(t)) );
       return kumi::fold_left( [f]<typename U>(auto cur, U const& u)
                               {
                                 return cur < f(u) ? cur : f(u);

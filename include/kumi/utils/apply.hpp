@@ -75,36 +75,20 @@ namespace kumi
             return *y;
           else
             return KUMI_FWD(y);
-        }(get<0>(KUMI_FWD(t)));
+        }(get<0>(KUMI_FWD(t))); //MMMMh idk
         if constexpr(std::is_member_object_pointer_v<std::remove_cvref_t<decltype(f)>>)
           return KUMI_FWD(w).*f;
         else
-          return (KUMI_FWD(w).*f)(get<I + 1>(KUMI_FWD(t))...);
+          return (KUMI_FWD(w).*f)(unwrap_if_record<Tuple>(get<I + 1>(KUMI_FWD(t)))...);
       }
       (std::make_index_sequence<size<Tuple>::value - 1>());
-    else if constexpr ( record_type<std::remove_cvref_t<Tuple>> )
-      return [&]<std::size_t... I>(std::index_sequence<I...>) -> decltype(auto)
-      {
-        return KUMI_FWD(f)(unwrap_field_value(get<I>(KUMI_FWD(t)))...);
-      }
-      (std::make_index_sequence<size<Tuple>::value>());
     else
       return [&]<std::size_t... I>(std::index_sequence<I...>) -> decltype(auto)
       {
-        return KUMI_FWD(f)(get<I>(KUMI_FWD(t))...);
+        return KUMI_FWD(f)(unwrap_if_record<Tuple>(get<I>(KUMI_FWD(t)))...);
       }
       (std::make_index_sequence<size<Tuple>::value>());
   }
-  ///
-
-  
- /* template<typename Function, product_type Tuple>
-  constexpr decltype(auto) apply_typped(Function &&f, Tuple &&t) 
-  {
-    auto tuple    = rebind<kumi::tuple<>>(KUMI_FWD(t));
-    auto result   = apply(KUMI_FWD(f), KUMI_FWD(tuple));
-    return rebind<std::remove_cvref_t<Tuple>>(KUMI_FWD(result));
-  }*/
 
   namespace result
   {

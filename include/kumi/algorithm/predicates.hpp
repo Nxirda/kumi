@@ -25,8 +25,8 @@ namespace kumi
     else
     {
       if      constexpr(size_v<T> == 0) return true;
-      else if constexpr(size_v<T> == 1) return p(get<0>(ts));
-      else return kumi::apply( [&](auto const&... m) { return (p(m) && ... && p(get<0>(ts))); }, extract(ts,index<1>));
+      else if constexpr(size_v<T> == 1) return p(unwrap_if_record<T>(get<0>(ts)));
+      else return kumi::apply( [&](auto const&... m) { return (p(m) && ... && p(unwrap_if_record<T>(get<0>(ts)))); }, extract(ts,index<1>));
     }
   }
 
@@ -45,8 +45,8 @@ namespace kumi
     else
     {
       if      constexpr(size_v<T> == 0) return true;
-      else if constexpr(size_v<T> == 1) return !!get<0>(ts);
-      else return kumi::apply( [&](auto const&... m) { return (m && ... && get<0>(ts)); }, extract(ts,index<1>) );
+      else if constexpr(size_v<T> == 1) return !!unwrap_if_record<T>(get<0>(ts));
+      else return kumi::apply( [&](auto const&... m) { return (m && ... && unwrap_if_record<T>(get<0>(ts))); }, extract(ts,index<1>) );
     }
   }
 
@@ -66,8 +66,8 @@ namespace kumi
     else
     {
       if      constexpr(size_v<T> == 0) return true;
-      else if constexpr(size_v<T> == 1) return p(get<0>(ts));
-      else return kumi::apply( [&](auto const&... m) { return (p(m) || ... || p(get<0>(ts))); }, extract(ts,index<1>));
+      else if constexpr(size_v<T> == 1) return p(unwrap_if_record<T>(get<0>(ts)));
+      else return kumi::apply( [&](auto const&... m) { return (p(m) || ... || p(unwrap_if_record<T>(get<0>(ts)))); }, extract(ts,index<1>));
     }
   }
 
@@ -86,8 +86,8 @@ namespace kumi
     else
     {
       if      constexpr(size_v<T> == 0) return false;
-      else if constexpr(size_v<T> == 1) return !!get<0>(ts);
-      else return kumi::apply( [&](auto const&... m) { return (m || ... || get<0>(ts)); }, extract(ts,index<1>) );
+      else if constexpr(size_v<T> == 1) return !!unwrap_if_record<T>(get<0>(ts));
+      else return kumi::apply( [&](auto const&... m) { return (m || ... || unwrap_if_record<T>(get<0>(ts))); }, extract(ts,index<1>) );
     }
   }
 

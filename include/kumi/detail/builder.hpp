@@ -39,8 +39,6 @@ namespace kumi
     //! }
     //! @endcode
     //==============================================================================================
-
-    //==============================================================================================
     template<typename... Ts>
     using to = kumi::tuple<Ts...>;
 
@@ -67,7 +65,10 @@ namespace kumi
     template<typename... Args>
     static constexpr auto make(Args&&... args)
     {
-      return Box{ KUMI_FWD(args)... };
+      if constexpr( requires{ Box{KUMI_FWD(args)...}; })
+        return Box{ KUMI_FWD(args)... };
+      else
+        return kumi::tuple{KUMI_FWD(args)...};
     }
   };
 

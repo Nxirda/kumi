@@ -46,14 +46,14 @@ namespace kumi
   constexpr auto
   map(Function     f,
       Tuple  &&t0,
-      Tuples &&...others) requires _::supports_call<Function, Tuple&&, Tuples&&...>
+      Tuples &&...others) //requires _::supports_call<Function, Tuple&&, Tuples&&...>
   {
     if constexpr(sized_product_type<Tuple,0>) return std::remove_cvref_t<Tuple>{};
     else
     {
       auto const call = [&]<std::size_t N, typename... Ts>(index_t<N>, Ts &&... args)
       {
-        return f(get<N>(args)...);
+        return f(unwrap_if_record<Ts>(get<N>(args))...);
       };
 
       return [&]<std::size_t... I>(std::index_sequence<I...>)
@@ -119,7 +119,7 @@ namespace kumi
     {
       auto const call = [&]<std::size_t N, typename... Ts>(index_t<N> idx, Ts &&... args)
       {
-        return f(idx, get<N>(args)...);
+        return f(idx, unwrap_if_record<Ts>(get<N>(args))...);
       };
 
       return [&]<std::size_t... I>(std::index_sequence<I...>)
