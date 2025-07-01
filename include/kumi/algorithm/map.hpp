@@ -47,13 +47,30 @@ namespace kumi
   map(Function     f,
       Tuple  &&t0,
       Tuples &&...others) //requires _::supports_call<Function, Tuple&&, Tuples&&...>
+  requires ( compatible_product_types<std::remove_cvref_t<Tuple>, std::remove_cvref_t<Tuples>...> )
   {
     if constexpr(sized_product_type<Tuple,0>) return std::remove_cvref_t<Tuple>{};
+    else if constexpr( record_type<std::remove_cvref_t<Tuple>>  )
+    {
+      auto const call = [&]<std::size_t N, typename... Ts>(index_t<N>, Ts &&... args)
+      {
+        using curr_t = std::remove_cvref_t<kumi::element_t<N, Tuple>>;
+        auto name = field_name<curr_t::name>{};
+        return ( name = f(get<name>(args)...));
+      };
+
+      return [&]<std::size_t... I>(std::index_sequence<I...>)
+      {
+        return builder<std::remove_cvref_t<Tuple>>
+                ::make(call(index<I>, KUMI_FWD(t0), KUMI_FWD(others)...)...);
+      }(std::make_index_sequence<size_v<Tuple>>());
+
+    }
     else
     {
       auto const call = [&]<std::size_t N, typename... Ts>(index_t<N>, Ts &&... args)
       {
-        return f(unwrap_if_record<Ts>(get<N>(args))...);
+        return f(get<N>(args)...);
       };
 
       return [&]<std::size_t... I>(std::index_sequence<I...>)

@@ -45,9 +45,10 @@ namespace kumi
           return apply([](auto const &...m) { return builder<std::remove_cvref_t<Tuple>>::make(get<N::value>(m)...); }, u);
         };
 
-        return builder<std::remove_cvref_t<Tuple>>::make(uz(index_t<I> {}, t)...);
+        //return builder<std::remove_cvref_t<Tuple>>::make(uz(index_t<I> {}, t)...);
+        return kumi::tuple{uz(index_t<I>{}, t)...};
       }
-      (std::make_index_sequence<size<element_t<0,Tuple>>::value>());
+      (std::make_index_sequence<size<unwrap_field_capture_t<element_t<0,Tuple>>>::value>());
     }
   }
 

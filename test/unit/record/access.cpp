@@ -9,14 +9,14 @@
 #include <kumi/record.hpp>
 #include <tts/tts.hpp>
 
+using namespace kumi::literals;
+
 TTS_CASE("Check access to kumi::record via indexing")
 {
-  using namespace kumi::literals;
-
-  kumi::record t1 = {"x"_f = 1};
-  kumi::record t2 = {"x"_f = 1.f, "y"_f = 2};
-  kumi::record t3 = {"x"_f = 1., "y"_f = 2.f, "z"_f = 3};
-  kumi::record t4 = {"x"_f = '1', "y"_f = 2., "z"_f = 3.f, "t"_f = 4};
+  kumi::record t1 = { "x"_f = 1                                         };
+  kumi::record t2 = { "x"_f = 1.f, "y"_f = 2                            };
+  kumi::record t3 = { "x"_f = 1. , "y"_f = 2.f, "z"_f = 3               };
+  kumi::record t4 = { "x"_f = '1', "y"_f = 2. , "z"_f = 3.f, "t"_f = 4  };
   
   t1[0_c].value = 42;
   TTS_EQUAL(t1[0_c].value  , 42);
@@ -45,19 +45,17 @@ TTS_CASE("Check access to kumi::record via indexing")
   TTS_EQUAL(t4[2_c].value  , 4.2f);
   TTS_EQUAL(t4[3_c].value  , 1337);
 
-  TTS_EQUAL(kumi::get<0>(std::move(t3)).value    , 13.37 );
-  TTS_EQUAL(std::move(t3)[1_c].value             , 4.2f  );
+  TTS_EQUAL(kumi::get<0>(std::move(t3)).value   , 13.37 );
+  TTS_EQUAL(std::move(t3)[1_c].value            , 4.2f  );
 
 };
 
 TTS_CASE("Check access to kumi::record via names")
 {
-  using namespace kumi::literals;
-
-  kumi::record t1 = {"x"_f = 1};
-  kumi::record t2 = {"x"_f = 1.f, "y"_f = 2};
-  kumi::record t3 = {"x"_f = 1., "y"_f = 2.f, "z"_f = 3};
-  kumi::record t4 = {"x"_f = '1', "y"_f = 2., "z"_f = 3.f, "t"_f = 4};
+  kumi::record t1 = { "x"_f = 1                                         };
+  kumi::record t2 = { "x"_f = 1.f, "y"_f = 2                            };
+  kumi::record t3 = { "x"_f = 1. , "y"_f = 2.f, "z"_f = 3               };
+  kumi::record t4 = { "x"_f = '1', "y"_f = 2. , "z"_f = 3.f, "t"_f = 4  };
 
   t1["x"_f] = 42;
   TTS_EQUAL(t1["x"_f], 42);
@@ -89,12 +87,10 @@ TTS_CASE("Check access to kumi::record via names")
 
 TTS_CASE("Check constexpr access to kumi::record with named fields via indexing")
 {
-  using namespace kumi::literals;
-
-  constexpr kumi::record t1 = {"x"_f = 1};
-  constexpr kumi::record t2 = {"x"_f = 1.f, "y"_f = 2};
-  constexpr kumi::record t3 = {"x"_f = 1., "y"_f = 2.f, "z"_f = 3};
-  constexpr kumi::record t4 = {"x"_f = '1', "y"_f = 2., "z"_f = 3.f, "t"_f = 4};
+  constexpr kumi::record t1 = { "x"_f = 1                                           };
+  constexpr kumi::record t2 = { "x"_f = 1.f, "y"_f = 2                              };
+  constexpr kumi::record t3 = { "x"_f = 1. , "y"_f = 2.f, "z"_f = 3                 };
+  constexpr kumi::record t4 = { "x"_f = '1', "y"_f = 2. , "z"_f = 3.f, "t"_f = 4    };
   
   TTS_CONSTEXPR_EQUAL(get<0>(t1).value  , t1[0_c].value  );
 
@@ -113,12 +109,10 @@ TTS_CASE("Check constexpr access to kumi::record with named fields via indexing"
 
 TTS_CASE("Check constexpr access to kumi::record with named fields via names")
 {
-  using namespace kumi::literals;
-
-  constexpr kumi::record t1 = {"x"_f = 1};
-  constexpr kumi::record t2 = {"x"_f = 1.f, "y"_f = 2};
-  constexpr kumi::record t3 = {"x"_f = 1., "y"_f = 2.f, "z"_f = 3};
-  constexpr kumi::record t4 = {"x"_f = '1', "y"_f = 2., "z"_f = 3.f, "t"_f = 4};
+  constexpr kumi::record t1 = { "x"_f = 1                                       };
+  constexpr kumi::record t2 = { "x"_f = 1.f, "y"_f = 2                          };
+  constexpr kumi::record t3 = { "x"_f = 1. , "y"_f = 2.f, "z"_f = 3             };
+  constexpr kumi::record t4 = { "x"_f = '1', "y"_f = 2., "z"_f = 3.f, "t"_f = 4 };
   
   TTS_CONSTEXPR_EQUAL(get<"x"_f>(t1), t1["x"_f]);
 

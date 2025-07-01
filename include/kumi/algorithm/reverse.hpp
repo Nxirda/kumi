@@ -37,7 +37,7 @@ namespace kumi
   template<product_type Tuple>
   [[nodiscard]] constexpr auto reverse(Tuple &&t)
   {
-    if constexpr(sized_product_type<Tuple,0>) return kumi::tuple<>{};
+    if constexpr(sized_product_type<Tuple,0>) return builder<std::remove_cvref_t<Tuple>>::make();
     else
     {
       return [&]<std::size_t... I>(std::index_sequence<I...>)

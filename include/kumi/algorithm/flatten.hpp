@@ -94,12 +94,15 @@ namespace kumi
       {
         if constexpr(product_type<V>)
           return flatten_all(KUMI_FWD(v),KUMI_FWD(f));
-        else if constexpr ( is_field_capture_v<V> )
+        else if constexpr ( is_field_capture_v<std::remove_cvref_t<V>> )
         {
            if constexpr ( product_type<decltype(unwrap_field_value(v))> )  
             return flatten_all( unwrap_field_value(KUMI_FWD(v)), KUMI_FWD(f) );      
           else
-            return builder<type>::make( KUMI_FWD(f)(unwrap_field_value(KUMI_FWD(v))));
+          {
+            using tr_t = decltype(f(unwrap_field_value(v)));
+            return builder<type>::make( field_capture<V::name, tr_t>{ KUMI_FWD(f)(KUMI_FWD(unwrap_field_value(v))) } );
+          }
         }
         else
           return builder<type>::make( KUMI_FWD(f)(KUMI_FWD(v)) );    

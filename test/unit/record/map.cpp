@@ -39,7 +39,6 @@ TTS_CASE("Check result::map<F,Record...> behavior")
               );
 };
 
-/*
 TTS_CASE("Check map(f, {}) behavior")
 {
   bool was_run = false;
@@ -59,10 +58,10 @@ TTS_CASE("Check map(f, record) behavior")
       auto s = map([](auto m) { return sizeof(m); }, t);
 
       auto [s0, s1, s2, s3] = s;
-      auto m0 = s0;
-      auto m1 = s1;
-      auto m2 = s2;
-      auto m3 = s3;
+      auto m0 = s0.value;
+      auto m1 = s1.value;
+      auto m2 = s2.value;
+      auto m3 = s3.value;
       TTS_EQUAL(m0, sizeof(int));
       TTS_EQUAL(m1, sizeof(double));
       TTS_EQUAL(m2, sizeof(float));
@@ -70,14 +69,14 @@ TTS_CASE("Check map(f, record) behavior")
     }
 
     {
-      auto u = kumi::record {"a"_f = 2, "b"_f = 3, "c"_f = 4, "d"_f = 5};
+      auto u = kumi::record { "c"_f = 4, "b"_f = 3, "d"_f = 5, "a"_f = 2,};
       auto s = map([](auto m, auto n) { return n * sizeof(m); }, t, u);
 
       auto [s0, s1, s2, s3] = s;
-      auto m0 = s0;
-      auto m1 = s1;
-      auto m2 = s2;
-      auto m3 = s3;
+      auto m0 = s0.value;
+      auto m1 = s1.value;
+      auto m2 = s2.value;
+      auto m3 = s3.value;
       TTS_EQUAL(m0, 2 * sizeof(int));
       TTS_EQUAL(m1, 3 * sizeof(double));
       TTS_EQUAL(m2, 4 * sizeof(float));
@@ -113,4 +112,3 @@ TTS_CASE("Check map(f, record) constexpr behavior")
     }
   }
 };
-*/

@@ -65,12 +65,12 @@ namespace kumi
       {
         using rts  = std::remove_cvref_t<decltype(tuples)>;
         
-        using type = builder_t<std::remove_cvref_t<res_type>
+        using type_t = builder_t<std::remove_cvref_t<res_type>
                         , std::tuple_element_t<pos.e[N]
                             , std::remove_cvref_t<std::tuple_element_t<pos.t[N], rts>>
                             >...
                         >;
-        return type{ get<pos.e[N]>(get<pos.t[N]>(KUMI_FWD(tuples)))... };
+        return type_t{ get<pos.e[N]>(get<pos.t[N]>(KUMI_FWD(tuples)))... };
       }(kumi::forward_as_tuple(KUMI_FWD(ts)...), std::make_index_sequence<count-1>{});
     }
   }

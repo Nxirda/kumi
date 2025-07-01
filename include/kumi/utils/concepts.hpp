@@ -239,4 +239,9 @@ namespace kumi
   //================================================================================================
   template<typename T, typename U>
   concept named_equality_comparable = equally_named<T,U> && _::check_named_equality_v<T,U>;
+
+  template<typename T, typename... Us>
+  concept compatible_product_types = ( product_type<T> && ( product_type<Us> && ...))  
+  && ((!record_type<T> && (!record_type<Us> && ...)) 
+  || (record_type<T> && (record_type<Us> && ...) && (equally_named<T, Us> && ...)));
 }

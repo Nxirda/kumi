@@ -37,7 +37,7 @@ namespace kumi
   template<product_type Tuple>
   KUMI_TRIVIAL_NODISCARD constexpr decltype(auto) front(Tuple&& t) requires( size_v<Tuple> != 0)
   {
-    return get<0>(KUMI_FWD(t));
+    return unwrap_if_record<Tuple>(get<0>(KUMI_FWD(t)));
   }
 
   //================================================================================================
@@ -66,7 +66,7 @@ namespace kumi
   template<product_type Tuple>
   KUMI_TRIVIAL_NODISCARD constexpr decltype(auto) back(Tuple&& t) requires( size_v<Tuple> != 0)
   {
-    return get<size_v<Tuple>-1>(KUMI_FWD(t));
+    return unwrap_if_record<Tuple>(get<size_v<Tuple>-1>(KUMI_FWD(t)));
   }
 
   namespace result

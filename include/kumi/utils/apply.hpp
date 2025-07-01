@@ -75,7 +75,7 @@ namespace kumi
             return *y;
           else
             return KUMI_FWD(y);
-        }(get<0>(KUMI_FWD(t))); //MMMMh idk
+        }( unwrap_if_record<Tuple>( get<0>(KUMI_FWD(t) ))); 
         if constexpr(std::is_member_object_pointer_v<std::remove_cvref_t<decltype(f)>>)
           return KUMI_FWD(w).*f;
         else

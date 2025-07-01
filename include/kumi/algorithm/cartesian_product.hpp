@@ -8,7 +8,7 @@
 #pragma once
 
 #include <kumi/utils/pp_helpers.hpp>
-
+#include <kumi/detail/builder.hpp>
 namespace kumi
 {
 
@@ -70,15 +70,17 @@ namespace kumi
       struct { t_t data[sizeof...(I)]; } that = {dgt(I)...};
       return that;
     }(std::make_index_sequence<(kumi::size_v<Ts> * ...)>{});
+    
+    using ret_type = std::remove_cvref_t<common_product_type_or_t<kumi::tuple<>, std::remove_cvref_t<Ts>...>>;
 
     auto maps = [&]<std::size_t... I>(auto k, std::index_sequence<I...>)
     {
       auto tps = kumi::forward_as_tuple(ts...);
-      using tuple_t = kumi::tuple < std::tuple_element_t< idx.data[k].data[I]
+      using type_t = builder_t< ret_type, std::tuple_element_t< idx.data[k].data[I]
                                                         , std::remove_cvref_t<std::tuple_element_t<I,decltype(tps)>>
                                                         >...
                                   >;
-      return tuple_t{kumi::get<idx.data[k].data[I]>(kumi::get<I>(tps))...};
+      return type_t{get<idx.data[k].data[I]>(get<I>(tps))...};
     };
 
     return [&]<std::size_t... N>(std::index_sequence<N...>)

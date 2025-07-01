@@ -28,9 +28,29 @@ namespace kumi
   //================================================================================================
   template<typename Function, product_type Tuple, product_type... Tuples>
   constexpr void for_each(Function f, Tuple&& t, Tuples&&... ts)
+  requires( compatible_product_types<std::remove_cvref_t<Tuple>, std::remove_cvref_t<Tuples>...> )
   //requires _::supports_call<Function&, Tuple, Tuples...>
   {
     if constexpr(sized_product_type<Tuple,0>) return;
+    else if constexpr ( record_type<std::remove_cvref_t<Tuple>> )
+    {
+      [&]<std::size_t... I>(std::index_sequence<I...>)
+      {
+        // clang needs this for some reason
+        using std::get;
+        [[maybe_unused]] auto call = [&]<typename M>(M)
+                                        {   
+                                          using curr_t = std::remove_cvref_t<kumi::element_t<M::value, Tuple>>;
+                                          auto name = field_name<curr_t::name>{};
+                                          f ( get<name>(KUMI_FWD(t))
+                                            , get<name>(KUMI_FWD(ts))...
+                                          );
+                                        };
+
+          ( call(std::integral_constant<std::size_t, I>{}), ... );
+        }
+        (std::make_index_sequence<size_v<Tuple>>{});
+    }
     else
     {
       [&]<std::size_t... I>(std::index_sequence<I...>)
@@ -38,8 +58,8 @@ namespace kumi
         // clang needs this for some reason
         using std::get;
         [[maybe_unused]] auto call = [&]<typename M>(M)
-                                        { f ( unwrap_if_record<Tuple>(get<M::value>(KUMI_FWD(t)))
-                                            , unwrap_if_record<Tuples>(get<M::value>(KUMI_FWD(ts)))...
+                                        { f ( get<M::value>(KUMI_FWD(t))
+                                            , get<M::value>(KUMI_FWD(ts))...
                                             );
                                         };
 
@@ -76,8 +96,8 @@ namespace kumi
           f
           (
             i,
-            unwrap_if_record<Tuple>(get<i.value>(KUMI_FWD(t))),
-            unwrap_if_record<Tuples>(get<i.value>(KUMI_FWD(ts)))...
+            get<i.value>(KUMI_FWD(t)),
+            get<i.value>(KUMI_FWD(ts))...
           );
       }};
 

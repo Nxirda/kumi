@@ -88,6 +88,12 @@ namespace kumi
     return apply([](auto &&...elems) { return tuple{elems...}; }, KUMI_FWD(t));
   }
 
+  template<product_type Type>
+  [[nodiscard]] inline constexpr auto to_record(Type&& t)
+  {
+    return apply([](auto &&...elems) { return record{elems...}; }, KUMI_FWD(t));
+  }
+
   //================================================================================================
   //! @ingroup utility
   //! @brief Generate a kumi::tuple type from a type

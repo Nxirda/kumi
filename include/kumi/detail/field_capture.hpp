@@ -35,7 +35,8 @@ namespace kumi
     static constexpr auto name = ID;
 
     static constexpr bool is_field_capture = true;
-    
+
+    friend constexpr auto operator<=>(field_capture, field_capture) noexcept = default;
     //==============================================================================================
     /// @ingroup tuple 
     //! @related kumi::field_capture

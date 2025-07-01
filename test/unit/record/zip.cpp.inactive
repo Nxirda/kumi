@@ -7,57 +7,73 @@
 //==================================================================================================
 #define TTS_MAIN
 #include <array>
-#include <kumi/tuple.hpp>
+#include <kumi/record.hpp>
 #include <tts/tts.hpp>
 #include <vector>
 
-TTS_CASE("Check result::zip<Tuple...> behavior")
-{
-  using tuple1_t = kumi::tuple<char,short,int>;
-  using tuple2_t = kumi::tuple<long double, double, float>;
-  using tuple3_t = kumi::tuple<void*,void**,void***>;
+using namespace kumi::literals;
 
-  TTS_TYPE_IS ( (kumi::result::zip_t<tuple1_t, tuple2_t,tuple3_t>)
-              , ( kumi::tuple < kumi::tuple<char, long double,void*>
-                              , kumi::tuple<short, double,void**>
-                              , kumi::tuple<int, float,void***>
+TTS_CASE("Check result::zip<record...> behavior")
+{
+  using char_f      = kumi::field_capture<"a", char>;
+  using short_f     = kumi::field_capture<"b", short>;
+  using int_f       = kumi::field_capture<"c", int>;
+
+  using ld_f        = kumi::field_capture<"b", long double>;
+  using double_f    = kumi::field_capture<"c", double>;
+  using float_f     = kumi::field_capture<"a", float>;
+
+  using voidp_f     = kumi::field_capture<"c", void*>;
+  using voidpp_f    = kumi::field_capture<"a", void**>;
+  using voidppp_f   = kumi::field_capture<"b", void***>;
+
+  using record1_t = kumi::record<char_f,short_f,int_f>;
+  using record2_t = kumi::record<ld_f, double_f, float_f>;
+  using record3_t = kumi::record<voidp_f,voidpp_f,voidppp_f>;
+
+  TTS_TYPE_IS ( (kumi::result::zip_t<record1_t, record2_t,record3_t>)
+              , ( kumi::record < kumi::record<char_f, float_f,voidpp_f>
+                              , kumi::record<short_f, ld_f, voidppp_f>
+                              , kumi::record<int_f, double_f,voidp_f>
                               >
                 )
               );
 };
 
-TTS_CASE("Check tuple::zip behavior")
+/*
+TTS_CASE("Check record::zip behavior")
 {
-  using kumi::tuple;
+  using kumi::record;
 
-  auto numbers = tuple {1, 2, 3, 4};
-  auto letters = tuple {'a', 'b', 'c', 'd'};
-  auto ratio   = tuple {1.f, 0.5f, 0.25, 0.01};
+  auto numbers = record {1, 2, 3, 4};
+  auto letters = record {'a', 'b', 'c', 'd'};
+  auto ratio   = record {1.f, 0.5f, 0.25, 0.01};
 
-  TTS_EQUAL((kumi::zip(kumi::tuple{},kumi::tuple{})),kumi::tuple{});
+  TTS_EQUAL((kumi::zip(kumi::record{},kumi::record{})),kumi::record{});
 
   TTS_EQUAL((kumi::zip(numbers, letters)),
-            (tuple {tuple {1, 'a'}, tuple {2, 'b'}, tuple {3, 'c'}, tuple {4, 'd'}}));
+            (record {record {1, 'a'}, record {2, 'b'}, record {3, 'c'}, record {4, 'd'}}));
 
   TTS_EQUAL(
       (kumi::zip(numbers, letters, ratio)),
-      (tuple {
-          tuple {1, 'a', 1.f}, tuple {2, 'b', 0.5f}, tuple {3, 'c', 0.25}, tuple {4, 'd', 0.01}}));
+      (record {
+          record {1, 'a', 1.f}, record {2, 'b', 0.5f}, record {3, 'c', 0.25}, record {4, 'd', 0.01}}));
 };
 
-TTS_CASE("Check tuple::zip constexpr behavior")
+TTS_CASE("Check record::zip constexpr behavior")
 {
-  using kumi::tuple;
+  using kumi::record;
 
-  constexpr auto numbers = tuple {1, 2, 3, 4};
-  constexpr auto letters = tuple {'a', 'b', 'c', 'd'};
-  constexpr auto ratio   = tuple {1.f, 0.5f, 0.25, 0.01};
+  constexpr auto numbers = record {1, 2, 3, 4};
+  constexpr auto letters = record {'a', 'b', 'c', 'd'};
+  constexpr auto ratio   = record {1.f, 0.5f, 0.25, 0.01};
 
   TTS_CONSTEXPR_EQUAL((kumi::zip(numbers, letters)),
-                      (tuple {tuple {1, 'a'}, tuple {2, 'b'}, tuple {3, 'c'}, tuple {4, 'd'}}));
+                      (record {record {1, 'a'}, record {2, 'b'}, record {3, 'c'}, record {4, 'd'}}));
 
   TTS_CONSTEXPR_EQUAL(
       (kumi::zip(numbers, letters, ratio)),
-      (tuple {
-          tuple {1, 'a', 1.f}, tuple {2, 'b', 0.5f}, tuple {3, 'c', 0.25}, tuple {4, 'd', 0.01}}));
+      (record {
+          record {1, 'a', 1.f}, record {2, 'b', 0.5f}, record {3, 'c', 0.25}, record {4, 'd', 0.01}}));
 };
+*/

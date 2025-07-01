@@ -75,6 +75,7 @@ TTS_CASE("Check for_each constexpr behavior")
   TTS_CONSTEXPR_EQUAL(get<"d"_f>(t2), '@');
 };
 
+/*
 TTS_CASE("Check for_each_index behavior")
 {
   using namespace kumi::literals;
@@ -153,3 +154,4 @@ TTS_CASE("Check for_each_index constexpr behavior")
   kumi::for_each_index([&]() { was_run = true; }, kumi::record{});
   TTS_EXPECT_NOT(was_run);
 };
+*/

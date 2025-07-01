@@ -6,25 +6,35 @@
 */
 //==================================================================================================
 #define TTS_MAIN
-#include <kumi/tuple.hpp>
+#include <kumi/record.hpp>
 #include <tts/tts.hpp>
 #include <string>
 
-TTS_CASE("Check result::cartesian_product<Tuple...> behavior")
+using namespace kumi::literals;
+
+TTS_CASE("Check result::cartesian_product<Record...> behavior")
 {
+  using int_f           = kumi::field_capture<"a", int>;
+  using int_ref_f       = kumi::field_capture<"b", int&>;
+  using int_ptr_f       = kumi::field_capture<"c", int*>;
+  using float_f         = kumi::field_capture<"d", float>;
+  using float_ptr_f     = kumi::field_capture<"e", float*>;
+  using double_f        = kumi::field_capture<"f", double>;
+  using double_cref_f   = kumi::field_capture<"g", double const&>;
+
   TTS_TYPE_IS( kumi::result::cartesian_product_t<>, kumi::tuple<>);
 
-  TTS_TYPE_IS ( (kumi::result::cartesian_product_t<kumi::tuple<int,float,double>>)
-              , (kumi::tuple<kumi::tuple<int>,kumi::tuple<float>,kumi::tuple<double>>)
+  TTS_TYPE_IS ( (kumi::result::cartesian_product_t<kumi::record<int_f,float_f,double_f>>)
+              , (kumi::tuple<kumi::record<int_f>,kumi::record<float_f>,kumi::record<double_f>>)
               );
 
-  TTS_TYPE_IS ( (kumi::result::cartesian_product_t<kumi::tuple<int&,float,double const&>>)
-              , (kumi::tuple<kumi::tuple<int&>,kumi::tuple<float>,kumi::tuple<double const&>>)
+  TTS_TYPE_IS ( (kumi::result::cartesian_product_t<kumi::record<int_ref_f,float_f,double_cref_f>>)
+              , (kumi::tuple<kumi::record<int_ref_f>,kumi::record<float_f>,kumi::record<double_cref_f>>)
               );
-
-  TTS_TYPE_IS ( (kumi::result::cartesian_product_t<kumi::tuple<int,float,double>, kumi::tuple<int*,float*>>)
-              , (kumi::tuple< kumi::tuple<int, int*>  , kumi::tuple<float, int*>  , kumi::tuple<double, int*>
-                            , kumi::tuple<int, float*>, kumi::tuple<float, float*>, kumi::tuple<double, float*>
+    
+  TTS_TYPE_IS ( (kumi::result::cartesian_product_t<kumi::record<int_f,float_f,double_f>, kumi::record<int_ptr_f,float_ptr_f>>)
+              , (kumi::tuple< kumi::record<int_f, int_ptr_f>, kumi::record<float_f, int_ptr_f>  , kumi::record<double_f, int_ptr_f>
+                            , kumi::record<int_f, float_ptr_f>, kumi::record<float_f, float_ptr_f>, kumi::record<double_f, float_ptr_f>
                             >)
               );
 };
@@ -36,25 +46,30 @@ TTS_CASE("Check cartesian_product() behavior")
 
 TTS_CASE("Check cartesian_product() behavior with references")
 {
+  using int_f       = kumi::field_capture<"a", int>;
+  using int_ref_f   = kumi::field_capture<"b", int&>;
+  using int_cref_f  = kumi::field_capture<"c", int const&>;
+
   int   a = 0;
-  auto t0 = kumi::tuple<int,int&,int const&>{a,a,a};
+  auto t0 = kumi::record<int_f,int_ref_f,int_cref_f>{a,a,a};
   auto cp0 = kumi::cartesian_product(t0);
 
-  kumi::get<0>(kumi::get<0>(cp0))++;
-  kumi::get<0>(kumi::get<1>(cp0)) = 10;
+  kumi::get<"a"_f>(kumi::get<0>(cp0))++;
+  kumi::get<"b"_f>(kumi::get<1>(cp0)) = 10;
 
   TTS_EQUAL(a, 10);
-  TTS_EQUAL(kumi::get<0>(kumi::get<0>(cp0)), 1);
-  TTS_EQUAL(kumi::get<0>(kumi::get<2>(cp0)), 10);
+  TTS_EQUAL(kumi::get<"a"_f>(kumi::get<0>(cp0)), 1);
+  TTS_EQUAL(kumi::get<"c"_f>(kumi::get<2>(cp0)), 10);
 };
 
 TTS_CASE("Check cartesian_product(ts...) behavior")
 {
   using namespace std::literals;
+  using namespace kumi::literals;
 
-  auto t1 = kumi::make_tuple(1,2ULL);
-  auto t2 = kumi::make_tuple(1.2,3.4f,5.6);
-  auto t3 = kumi::make_tuple("first"s, "second"s, "third"s, "fourth"s);
+  auto t1 = kumi::make_record("a"_f = 1, "b"_f = 2ULL);
+  auto t2 = kumi::make_record("c"_f = 1.2, "d"_f = 3.4f, "e"_f = 5.6);
+  auto t3 = kumi::make_record("f"_f = "first"s,"g"_f = "second"s, "h"_f = "third"s, "i"_f = "fourth"s);
   auto cp = kumi::cartesian_product(t1,t2,t3);
 
   TTS_EQUAL( kumi::get<0>(kumi::get< 0>(cp)), kumi::get<0>(t1) );

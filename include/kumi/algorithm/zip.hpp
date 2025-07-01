@@ -38,11 +38,20 @@ namespace kumi
   template<product_type T0, sized_product_type<size_v<T0>>... Ts>
   [[nodiscard]] constexpr auto zip(T0 const &t0, Ts const &...ts)
   {
-    using res_type = std::remove_cvref_t<kumi::common_product_type_or_t<kumi::tuple<>, std::remove_cvref_t<T0>, std::remove_cvref_t<Ts>...>>;
-
+    if constexpr( record_type<T0> && (record_type<Ts> && ...) ) 
+    {
+      if constexpr( (equally_named<T0, Ts> && ...) )
+        return kumi::to_record( kumi::map( [&](auto const& n)
+        {
+          auto field = field_name<n>{};             
+          return ( field = kumi::make_tuple(get<field>(t0), get<field>(ts)...) );
+        }
+        , T0::names()
+        ));
+    }
     return kumi::map( [](auto const &m0, auto const &...ms) 
                     { 
-                        return builder<res_type>::make(m0, ms...);
+                        return kumi::make_tuple(m0, ms...);
                     }
                     , t0,ts...
                     );
