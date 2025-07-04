@@ -53,7 +53,7 @@ TTS_CASE("Check cartesian_product() behavior with references")
   int   a = 0;
   auto t0 = kumi::record<int_f,int_ref_f,int_cref_f>{a,a,a};
   auto cp0 = kumi::cartesian_product(t0);
-
+    
   kumi::get<"a"_f>(kumi::get<0>(cp0))++;
   kumi::get<"b"_f>(kumi::get<1>(cp0)) = 10;
 
