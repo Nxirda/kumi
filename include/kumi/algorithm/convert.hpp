@@ -61,12 +61,25 @@ namespace kumi
     return [&]<std::size_t... I>(std::index_sequence<I...>) { return Type {get<I>(t)...}; }
     (std::make_index_sequence<sizeof...(Ts)>());
   }
-    
+ 
+  //================================================================================================
+  //! @ingroup utility
+  //! @brief Converts a kumi::record to an instance of an arbitrary type
+  //!
+  //! Constructs an instance of `Type` by passing elements of `r` to the appropriate constructor.
+  //!
+  //! @tparam Type Type to generate
+  //! @param  r    kumi::record to convert
+  //! @return An instance of `Type` constructed from each element of `r` in order.
+  //!
+  //! ## Example
+  //! @include doc/from_record.cpp
+  //================================================================================================
   template<typename Type, typename... Ts>
   requires(!record_type<Type> && _::implicit_constructible<Type, Ts...>)
-  [[nodiscard]] constexpr auto from_record(record<Ts...> const &t)
+  [[nodiscard]] constexpr auto from_record(record<Ts...> const &r)
   {
-    return [&]<std::size_t... I>(std::index_sequence<I...>) { return Type {get<I>(t)...}; }
+    return [&]<std::size_t... I>(std::index_sequence<I...>) { return Type { get<I>(r)...}; }
     (std::make_index_sequence<sizeof...(Ts)>());
   }
 
@@ -88,7 +101,19 @@ namespace kumi
     return apply([](auto &&...elems) { return tuple{elems...}; }, KUMI_FWD(t));
   }
 
-  template<product_type Type>
+  //================================================================================================
+  //! @ingroup utility
+  //! @brief Converts a kumi::product_type to an instance kumi::record
+  //!
+  //! Constructs an instance kumi::record from the elements of the kumi::product_type parameters
+  //!
+  //! @param  t    kumi::product_type to convert
+  //! @return An instance of kumi::record constructed from each elements of `t` in order.
+  //!
+  //! ## Example
+  //! @include doc/to_record.cpp
+  //================================================================================================
+  template<record_type Type>
   [[nodiscard]] inline constexpr auto to_record(Type&& t)
   {
     return apply([](auto &&...elems) { return record{elems...}; }, KUMI_FWD(t));

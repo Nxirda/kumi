@@ -66,7 +66,7 @@ namespace kumi
   template<product_type Tuple>
   [[nodiscard]] constexpr auto sum(Tuple&& t)
   {
-    return sum(kumi::extract(t,index<1>), unwrap_if_record<std::remove_cvref_t<Tuple>>(get<0>(t)));
+    return sum(kumi::extract(t,index<1>), unwrap_if_record<Tuple>(get<0>(t)));
   }
 
   //================================================================================================
@@ -126,7 +126,7 @@ namespace kumi
   template<product_type Tuple>
   [[nodiscard]] constexpr auto prod(Tuple&& t)
   {
-    return prod(kumi::extract(t,index<1>), unwrap_if_record<std::remove_cvref_t<Tuple>>(get<0>(t)));
+    return prod(kumi::extract(t,index<1>), unwrap_if_record<Tuple>(get<0>(t)));
   }
 
   //================================================================================================
@@ -186,7 +186,7 @@ namespace kumi
   template<product_type Tuple>
   [[nodiscard]] constexpr auto bit_and(Tuple&& t)
   {
-    return bit_and(kumi::extract(t,index<1>), unwrap_if_record<std::remove_cvref_t<Tuple>>(get<0>(t)));
+    return bit_and(kumi::extract(t,index<1>), unwrap_if_record<Tuple>(get<0>(t)));
   }
 
   //================================================================================================
@@ -246,7 +246,7 @@ namespace kumi
   template<product_type Tuple>
   [[nodiscard]] constexpr auto bit_or(Tuple&& t)
   {
-    return bit_or(kumi::extract(t,index<1>), unwrap_if_record<std::remove_cvref_t<Tuple>>(get<0>(t)));
+    return bit_or(kumi::extract(t,index<1>), unwrap_if_record<Tuple>(get<0>(t)));
   }
 
   namespace result

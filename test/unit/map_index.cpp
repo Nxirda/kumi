@@ -73,14 +73,13 @@ TTS_CASE("Check map_index(f, tuple) behavior")
   }
 };
 
-#if 0
 TTS_CASE("Check map_index(f, tuple) constexpr behavior")
 {
   {
     constexpr auto t = kumi::tuple {1, 2., 3.4f, '5'};
 
     {
-      constexpr auto s = map_index([](auto m) { return sizeof(m); }, t);
+      constexpr auto s = map_index([](auto, auto m) { return sizeof(m); }, t);
 
       TTS_CONSTEXPR_EQUAL(get<0>(s), sizeof(int));
       TTS_CONSTEXPR_EQUAL(get<1>(s), sizeof(double));
@@ -90,13 +89,12 @@ TTS_CASE("Check map_index(f, tuple) constexpr behavior")
 
     {
       constexpr auto u = kumi::tuple {2, 3, 4, 5};
-      constexpr auto s = map_index([](auto m, auto n) { return n * sizeof(m); }, t, u);
+      constexpr auto s = map_index([](auto i, auto m, auto n) { return (n+i) * sizeof(m); }, t, u);
 
       TTS_CONSTEXPR_EQUAL(get<0>(s), 2 * sizeof(int));
-      TTS_CONSTEXPR_EQUAL(get<1>(s), 3 * sizeof(double));
-      TTS_CONSTEXPR_EQUAL(get<2>(s), 4 * sizeof(float));
-      TTS_CONSTEXPR_EQUAL(get<3>(s), 5 * sizeof(char));
+      TTS_CONSTEXPR_EQUAL(get<1>(s), 4 * sizeof(double));
+      TTS_CONSTEXPR_EQUAL(get<2>(s), 6 * sizeof(float));
+      TTS_CONSTEXPR_EQUAL(get<3>(s), 8 * sizeof(char));
     }
   }
 };
-#endif

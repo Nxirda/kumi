@@ -235,6 +235,28 @@ namespace kumi
   template<typename T>
   using unwrap_name_t = typename unwrap_name<T>::type;
 
+  /// 
+  template<std::size_t I, typename T> 
+  struct raw_member     
+  {
+        using type = member_t<I,T>;
+  };
+
+  template<std::size_t I, typename T> 
+  requires( is_record_type<std::remove_cvref_t<T>>::value )
+  struct raw_member<I, T>
+  {
+      using type = std::add_lvalue_reference_t<unwrap_field_capture_t<std::remove_cvref_t<member_t<I,T>>>>;
+  };
+
+  template<std::size_t I, typename T> using raw_member_t = typename raw_member<I,T>::type;
+ 
+  template<std::size_t I, typename T> using  raw_element_t = unwrap_field_capture_t<element_t<I,T>>;
+
+  /// 
+  template<std::size_t I, typename T>
+  inline constexpr auto member_name_v = unwrap_name_v<std::remove_cvref_t<member_t<I,T>>>;
+
   //================================================================================================
   //! @ingroup traits
   //! @brief   Checks if a parameter pack only contains distinct types.

@@ -28,11 +28,12 @@ namespace kumi
   //================================================================================================
   template<typename Function, product_type Tuple, product_type... Tuples>
   constexpr void for_each(Function f, Tuple&& t, Tuples&&... ts)
-  requires( compatible_product_types<std::remove_cvref_t<Tuple>, std::remove_cvref_t<Tuples>...> )
-  //requires _::supports_call<Function&, Tuple, Tuples...>
+  requires( (compatible_product_types<std::remove_cvref_t<Tuple>, std::remove_cvref_t<Tuples>...>) && 
+            (_::supports_call<Function&, Tuple, Tuples...> ))
   {
+    using base_t = std::remove_cvref_t<Tuple>;
     if constexpr(sized_product_type<Tuple,0>) return;
-    else if constexpr ( record_type<std::remove_cvref_t<Tuple>> )
+    else if constexpr ( record_type<base_t> )
     {
       [&]<std::size_t... I>(std::index_sequence<I...>)
       {
@@ -40,10 +41,9 @@ namespace kumi
         using std::get;
         [[maybe_unused]] auto call = [&]<typename M>(M)
                                         {   
-                                          using curr_t = std::remove_cvref_t<kumi::element_t<M::value, Tuple>>;
-                                          auto name = field_name<curr_t::name>{};
-                                          f ( get<name>(KUMI_FWD(t))
-                                            , get<name>(KUMI_FWD(ts))...
+                                          using field_t = field_name<member_name_v<M::value, base_t>>;
+                                          f ( get<field_t{}>(KUMI_FWD(t))
+                                            , get<field_t{}>(KUMI_FWD(ts))...
                                           );
                                         };
 
@@ -86,6 +86,7 @@ namespace kumi
   //! @include doc/for_each_index.cpp
   //================================================================================================
   template<typename Function, product_type Tuple, product_type... Tuples>
+  requires( !record_type<std::remove_cvref_t<Tuple>> && (!record_type<std::remove_cvref_t<Tuples>> && ...))
   constexpr void for_each_index(Function f, Tuple&& t, Tuples&&... ts)
   {
     if constexpr(sized_product_type<Tuple,0>) return;
@@ -98,6 +99,49 @@ namespace kumi
             i,
             get<i.value>(KUMI_FWD(t)),
             get<i.value>(KUMI_FWD(ts))...
+          );
+      }};
+
+      [=]<std::size_t... I>(std::index_sequence<I...>)
+      {
+        (invoker( std::integral_constant<unsigned, I>{} ), ...);
+      }(std::make_index_sequence<size<Tuple>::value>());
+    }
+  }
+
+  //================================================================================================
+  //! @ingroup transforms
+  //! @brief Applies the Callable object f on each element of a kumi::product_type and its index.
+  //!
+  //! @note This function does not take part in overload resolution if `f` can't be applied to the
+  //!       elements of `t` and/or `ts` and an integral constant.
+  //!
+  //! @param f	  Callable object to be invoked
+  //! @param t    kumi::product_type whose elements to be used as arguments to f
+  //! @param ts   Other kumi::product_type whose elements to be used as arguments to f
+  //!
+  //! @see kumi::for_each
+  //!
+  //! ## Example
+  //! @include doc/for_each_index.cpp
+  //================================================================================================
+  template<typename Function, record_type Tuple, record_type... Tuples>
+  requires ( compatible_product_types<std::remove_cvref_t<Tuple>, std::remove_cvref_t<Tuples>...> )
+  constexpr void for_each_field(Function f, Tuple&& t, Tuples&&... ts)
+  {
+    using base_t = std::remove_cvref_t<Tuple>;
+    if constexpr(sized_product_type<Tuple,0>) return;
+    else
+    {
+      auto const invoker{[&, f](auto const i)
+      {
+          constexpr auto name = member_name_v<i, base_t>; 
+          using field_t = kumi::field_name<name>;
+          f
+          (
+            name.value(),
+            get<field_t{}>(KUMI_FWD(t)),
+            get<field_t{}>(KUMI_FWD(ts))...
           );
       }};
 

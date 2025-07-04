@@ -62,6 +62,7 @@ namespace kumi
   //================================================================================================
   template<product_type... Ts>
   [[nodiscard]] constexpr auto cartesian_product(Ts&&... ts)
+  requires( (!record_type<std::remove_cvref_t<Ts>> && ...))
   {
     constexpr auto idx = [&]<std::size_t... I>(std::index_sequence<I...>)
     {

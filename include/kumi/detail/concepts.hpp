@@ -74,7 +74,7 @@ namespace kumi::_
   //==============================================================================================
   template<typename From, typename To> struct is_fieldwise_constructible;
   template<typename From, typename To> struct is_fieldwise_convertible;
-  template<typename From, typename To> struct is_fieldwise_ordered;
+  //template<typename From, typename To> struct is_fieldwise_ordered;
 
   template<typename Ref, typename Field>
   struct check_name
@@ -117,11 +117,11 @@ namespace kumi::_
   };
 
   /// Wrong
-  template<template<class...> class Box, typename... From, typename... To>
+  /*template<template<class...> class Box, typename... From, typename... To>
   struct is_fieldwise_ordered<Box<From...>, Box<To...>>
   {
     static constexpr bool value = (... && ordered<From,To> );
-  };
+  };*/
 
   template<typename From, typename To>
   concept fieldwise_convertible = is_fieldwise_convertible<From, To>::value;
@@ -129,14 +129,14 @@ namespace kumi::_
   template<typename From, typename To>
   concept fieldwise_constructible = is_fieldwise_constructible<From, To>::value;
 
-  template<typename From, typename To>
-  concept fieldwise_ordered = is_fieldwise_ordered<From, To>::value;
+  //template<typename From, typename To>
+  //concept fieldwise_ordered = is_fieldwise_ordered<From, To>::value;
 
   //================================================================================================
   // Concept machinery to make our algorithms SFINAE friendly
   //================================================================================================
   template<typename F, size_t I, typename... Tuples>
-  concept supports_call_i = std::is_invocable_v<F, member_t<I,Tuples>...>;
+  concept supports_call_i = std::is_invocable_v<F, raw_member_t<I,Tuples>...>;
 
   template<typename F, typename Indices, typename... Tuples> struct supports_call_t;
 
@@ -154,9 +154,12 @@ namespace kumi::_
   {
   };
 
-  template<typename F, typename Tuple>
-  concept supports_apply = _::
-      supports_apply_t<F, std::make_index_sequence<size<Tuple>::value>, Tuple>::value;
+  template<typename F, size_t... Is, typename Record>
+  requires( is_record_type<std::remove_cvref_t<Record>>::value )
+  struct supports_apply_t<F, std::index_sequence<Is...>, Record>
+    : std::is_invocable<F, std::add_rvalue_reference_t<unwrap_field_capture_t<std::remove_cvref_t<decltype(get<Is>(std::declval<Record &&>()))>>>...> 
+  {
+  };
 
   template<typename F, typename Indices, typename Tuple> struct supports_nothrow_apply_t;
 
@@ -165,11 +168,22 @@ namespace kumi::_
       : std::is_nothrow_invocable<F, decltype(get<Is>(std::declval<Tuple &&>()))...>
   {
   };
+ 
+  template<typename F, size_t... Is, typename Record>
+  requires( is_record_type<std::remove_cvref_t<Record>>::value )
+  struct supports_nothrow_apply_t<F, std::index_sequence<Is...>, Record>
+      : std::is_nothrow_invocable<F, std::add_rvalue_reference_t<unwrap_field_capture_t<std::remove_cvref_t<decltype(get<Is>(std::declval<Record &&>()))>>>...>
+  {
+  };
+
+  template<typename F, typename Tuple>
+  concept supports_apply = _::
+      supports_apply_t<F, std::make_index_sequence<size<Tuple>::value>, Tuple>::value;
 
   template<typename F, typename Tuple>
   concept supports_nothrow_apply = _::
       supports_nothrow_apply_t<F, std::make_index_sequence<size<Tuple>::value>, Tuple>::value;
-
+ 
   template<typename F, typename... Tuples>
   concept supports_call = _::
       supports_call_t<F, std::make_index_sequence<(size<Tuples>::value, ...)>, Tuples...>::value;

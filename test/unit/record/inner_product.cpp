@@ -20,8 +20,8 @@ TTS_CASE("Check result::inner_product_t behavior")
 
   using int_f       = kumi::field_capture<"a", int>;
   using double_f    = kumi::field_capture<"b", double>;
-  using char_f      = kumi::field_capture<"c", char>;
-  using short_f     = kumi::field_capture<"d", short>;
+  using char_f      = kumi::field_capture<"a", char>;
+  using short_f     = kumi::field_capture<"b", short>;
 
   TTS_TYPE_IS ( (kumi::result::inner_product_t< kumi::record<int_f,double_f>
                                               , kumi::record<char_f,short_f>

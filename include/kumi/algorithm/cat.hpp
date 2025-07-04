@@ -36,6 +36,7 @@ namespace kumi
   //================================================================================================
   template<product_type... Tuples>
   KUMI_TRIVIAL_NODISCARD constexpr auto cat(Tuples&&... ts)
+  requires ( (!record_type<Tuples> && ... ) || (record_type<Tuples> && ...) )
   {
     if constexpr(sizeof...(Tuples) == 0) return tuple{};
     else

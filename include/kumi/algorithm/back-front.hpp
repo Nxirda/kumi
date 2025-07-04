@@ -71,8 +71,8 @@ namespace kumi
 
   namespace result
   {
-    template<product_type Tuple> struct front : member<0,Tuple> {};
-    template<product_type Tuple> struct back  : member<size_v<Tuple>-1,Tuple> {};
+    template<product_type Tuple> struct front : raw_member<0,Tuple> {};
+    template<product_type Tuple> struct back  : raw_member<size_v<Tuple>-1,Tuple> {};
 
     template<product_type Tuple> using front_t = typename front<Tuple>::type;
     template<product_type Tuple> using back_t  = typename back<Tuple>::type;

@@ -212,7 +212,7 @@ namespace kumi
     /// @ingroup record
     /// @related kumi::record
     /// @brief Compares records for lexicographical is less relation
-    template<typename... Us>
+    /*template<typename... Us>
     friend constexpr auto operator<(record const &lhs, record<Us...> const &rhs) noexcept
     requires(sizeof...(Ts) == sizeof...(Us)) // && _::piecewise_ordered<record, record<Us...>>)
     {
@@ -270,7 +270,7 @@ namespace kumi
     requires requires { lhs < rhs; }
     {
       return !(lhs < rhs);
-    }
+    }*/
  
     //==============================================================================================
     //! @}
@@ -368,10 +368,15 @@ namespace kumi
   //! ## Example:
   //! @include doc/forward_as_record.cpp
   //================================================================================================
-  /*template<typename... Ts> KUMI_TRIVIAL_NODISCARD constexpr record<Ts &&...> forward_as_record(Ts &&...ts)
+  template<typename... Ts> 
+  requires ( (sizeof...(Ts)==0) || (is_fully_named<Ts...> && uniquely_named<Ts...> ))
+  KUMI_TRIVIAL_NODISCARD constexpr record<field_capture<unwrap_name_v<Ts>, std::add_rvalue_reference_t<unwrap_field_capture_t<std::remove_cvref_t<Ts>>>>...>
+  forward_as_record(Ts &&... ts)
   {
-    return {KUMI_FWD(ts)...};
-  }*/
+    return { (field_capture<unwrap_name_v<Ts>, std::add_rvalue_reference_t<unwrap_field_capture_t<std::remove_cvref_t<Ts>>>>               
+             { unwrap_field_value(KUMI_FWD(ts))}
+             )... };
+  }
 
   //================================================================================================
   //! @ingroup record
@@ -385,6 +390,7 @@ namespace kumi
   //! @include doc/make_record.cpp
   //================================================================================================
   template<typename... Ts>
+  requires ( (sizeof...(Ts)==0) || (is_fully_named<Ts...> && uniquely_named<Ts...>) )
   KUMI_TRIVIAL_NODISCARD constexpr record<std::unwrap_ref_decay_t<Ts>...> make_record(Ts &&...ts)
   {
     return {KUMI_FWD(ts)...};
@@ -393,7 +399,7 @@ namespace kumi
   //================================================================================================
   //! @ingroup record
   //! @related kumi::record
-  //! @brief Creates a kumi::record of references given a reference to a kumi::product_type.
+  //! @brief Creates a kumi::record of references given a reference to a kumi::record_type.
   //!
   //! @param    t Compile-time index of the element to access
   //! @return   A record equivalent to the result of `kumi::apply([]<typename... T>(T&&... e)
@@ -402,17 +408,16 @@ namespace kumi
   //! ## Example:
   //! @include doc/to_ref.cpp
   //================================================================================================
-  /*template<product_type Type>
+  template<record_type Type>
   KUMI_TRIVIAL_NODISCARD constexpr auto to_ref(Type&& t)
   {
     return apply( [](auto&&... elems)
                   {
                     return kumi::forward_as_record(KUMI_FWD(elems)...);
                   }
-                , KUMI_FWD(t)
+                , from_record<as_tuple_t<std::remove_cvref_t<Type>>>(KUMI_FWD(t))
                 );
-  }*/
-
+  }
 
   //================================================================================================
   //! @}

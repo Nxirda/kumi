@@ -62,8 +62,8 @@ namespace kumi
   //! @include doc/apply.cpp
   //================================================================================================
   template<typename Function, product_type Tuple>
-  constexpr decltype(auto) apply(Function &&f, Tuple &&t) //noexcept(_::supports_nothrow_apply<Function &&, Tuple &&>)
-  //requires _::supports_apply<Function&&, Tuple&&>
+  constexpr decltype(auto) apply(Function &&f, Tuple &&t) noexcept(_::supports_nothrow_apply<Function &&, Tuple &&>)
+  requires _::supports_apply<Function&&, Tuple&&>
   {
     if constexpr(sized_product_type<Tuple,0>) return KUMI_FWD(f)();
     else if constexpr (std::is_member_pointer_v<std::decay_t<Function>>)
@@ -100,5 +100,17 @@ namespace kumi
 
     template<typename Function, product_type Tuple>
     using apply_t = typename apply<Function,Tuple>::type;
+  }
+ 
+  template<typename Function, record_type Tuple>
+  constexpr decltype(auto) apply_field(Function &&f, Tuple &&t) 
+  //noexcept(_::supports_nothrow_apply<Function &&, Tuple &&>)
+  //requires _::supports_apply<Function&&, Tuple&&>
+  {
+      return [&]<std::size_t... I>(std::index_sequence<I...>) -> decltype(auto)
+      {
+        return KUMI_FWD(f)(get<I>(KUMI_FWD(t))...);
+      }
+     (std::make_index_sequence<size<Tuple>::value>());;
   }
 }

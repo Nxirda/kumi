@@ -45,16 +45,9 @@ namespace kumi
 
       auto locate = [&]<std::size_t... I>(std::index_sequence<I...>)
       {
-        if constexpr ( record_type<std::remove_cvref_t<T>> )
-          (( Pred<unwrap_field_capture_t<kumi::element_t<I,T>>>::value ? (that.t[that.count++] = I) : I), ...);
-        else
-          (( Pred<kumi::element_t<I,T>>::value ? (that.t[that.count++] = I) : I),...);
+        (( Pred<raw_element_t<I,T>>::value ? (that.t[that.count++] = I) : I),...);
         that.cut = that.count;
-
-        if constexpr ( record_type<std::remove_cvref_t<T>> )
-          ((!Pred<unwrap_field_capture_t<kumi::element_t<I,T>>>::value ? (that.t[that.count++] = I) : I),...);
-        else
-          ((!Pred<kumi::element_t<I,T>>::value ? (that.t[that.count++] = I) : I),...);
+        ((!Pred<raw_element_t<I,T>>::value ? (that.t[that.count++] = I) : I),...);
       };
 
       locate(std::make_index_sequence<kumi::size<T>::value>{});

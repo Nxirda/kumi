@@ -37,7 +37,7 @@ namespace kumi
     {}
 
     constexpr std::size_t       size()  const { return size_; }
-    constexpr std::string_view  value() const { return std::string_view(&data_[0], size_); }
+    constexpr std::string_view  value() const { return std::string_view(&data_[0], size_-1); }
 
     friend constexpr auto operator <=>(str const&, str const&) noexcept = default;
 
@@ -46,4 +46,19 @@ namespace kumi
         return os << '\'' << s.value() << '\'';
     }
   };
+
+  template<auto lhs, auto rhs>
+  constexpr auto str_compose()
+  {
+    return [&]<std::size_t...I, std::size_t...J>(std::index_sequence<I...>, std::index_sequence<J...>)
+    {
+      constexpr char x[] = {lhs.data_[I]..., '.', rhs.data_[J]..., '\0'};
+      return str{x};
+    }
+    (std::make_index_sequence<lhs.size()-1>{},
+     std::make_index_sequence<rhs.size()-1>{});
+  }
+    
+  template<auto lhs, auto rhs>
+  inline constexpr auto str_compose_v = str_compose<lhs,rhs>();
 }

@@ -80,7 +80,7 @@ namespace kumi
   }
 
   template<typename T, typename U>
-  KUMI_TRIVIAL constexpr decltype(auto) unwrap_if_record(U&& u)
+  KUMI_TRIVIAL constexpr decltype(auto) unwrap_if_record(U&& u) noexcept
   {
       if constexpr ( record_type<std::remove_cvref_t<T>> )
           return unwrap_field_value<U>(KUMI_FWD(u));
@@ -111,7 +111,7 @@ namespace kumi
     //! @return A kumi::field_capture containing the value.
     //==============================================================================================
     template<typename T>
-    constexpr field_capture<ID, std::unwrap_ref_decay_t<T>> operator=(T v)
+    constexpr field_capture<ID, std::unwrap_ref_decay_t<T>> operator=(T v) const
     {
       return { std::move(v) };
     }

@@ -58,4 +58,23 @@ namespace kumi
     template<product_type Tuple, std::size_t... Idx>
     using reorder_t = typename reorder<Tuple,Idx...>::type;
   }
+
+  ///
+  template<field_name... Name, product_type Tuple>
+  KUMI_TRIVIAL_NODISCARD constexpr auto reorder_fields(Tuple &&t)
+  {
+    return builder<std::remove_cvref_t<Tuple>>::make( Name = get<Name>(KUMI_FWD(t))... );
+  }
+
+  namespace result
+  {
+    template<product_type Tuple, field_name... Name>
+    struct reorder_fields
+    {
+      using type = decltype( kumi::reorder_fields<Name...>( std::declval<Tuple>() ) );
+    };
+
+    template<product_type Tuple, field_name... Name>
+    using reorder_fields_t = typename reorder_fields<Tuple,Name...>::type;
+  }
 }

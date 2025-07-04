@@ -240,6 +240,14 @@ namespace kumi
   template<typename T, typename U>
   concept named_equality_comparable = equally_named<T,U> && _::check_named_equality_v<T,U>;
 
+  //================================================================================================
+  //! @ingroup concepts
+  //! @brief Concept specifying if two product types are comparable by matching name 
+  //!
+  //! A type `T` models `kumi::named_equality_comparable<T,U>` if it's a product_type that satisfies 
+  //! kumi::equally_named<T,U> and if each of its fields satisfies kumi::equality_comparable with
+  //! the corresponding field in `U` 
+  //================================================================================================
   template<typename T, typename... Us>
   concept compatible_product_types = ( product_type<T> && ( product_type<Us> && ...))  
   && ((!record_type<T> && (!record_type<Us> && ...)) 
