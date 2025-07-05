@@ -56,10 +56,12 @@ namespace kumi
             if constexpr ( record_type<unwrap_field_capture_t<std::remove_cvref_t<V>>>)
             { 
                 constexpr auto name = unwrap_name_v<std::remove_cvref_t<V>>;
-                return apply_field([&](auto&&... elt)
+                return _::apply_field([&](auto&&... elt)
                         {
-                            return builder<base_t>::make((field_name<str_compose_v<name, unwrap_name_v<std::remove_cvref_t<decltype(elt)>>>>{} = unwrap_field_value(KUMI_FWD(elt)))...);
-                        }, unwrap_field_value(v));
+                            return builder<base_t>::make((field_capture<str_compose_v<name, unwrap_name_v<std::remove_cvref_t<decltype(elt)>>>
+                                                        , unwrap_field_capture_t<std::remove_cvref_t<decltype(elt)>>>
+                            {unwrap_field_value(KUMI_FWD(elt))})...);
+                        }, unwrap_field_value(KUMI_FWD(v)));
                 
             }
             else
@@ -69,7 +71,7 @@ namespace kumi
     };
 
          if constexpr(sized_product_type<Tuple,0>)  return ts;
-    else if constexpr ( record_type<base_t> )       return kumi::apply_field(flattener_tmp, ts);     
+    else if constexpr ( record_type<base_t> )       return kumi::_::apply_field(flattener_tmp, ts);     
     else                                            return kumi::apply(flattener, ts);
   }
 
@@ -124,22 +126,24 @@ namespace kumi
             if constexpr ( record_type<unwrap_field_capture_t<std::remove_cvref_t<V>>>)
             { 
                 constexpr auto name = unwrap_name_v<std::remove_cvref_t<V>>;
-                auto &&tmp = apply_field([&](auto&&... elt)
-                {
-                   return builder<base_t>::make((field_name<str_compose_v<name, unwrap_name_v<std::remove_cvref_t<decltype(elt)>>>>{} = unwrap_field_value(KUMI_FWD(elt)))...);
+                return flatten_all(_::apply_field([&](auto&&... elt)
+                {  
+                   return builder<base_t>::make((field_capture<
+                                                    str_compose_v<name, unwrap_name_v<std::remove_cvref_t<decltype(elt)>>>
+                                                    , result::unwrap_field_value_t<decltype(elt)>>
+                          {unwrap_field_value(KUMI_FWD(elt))})...);
                 }
-                , unwrap_field_value(KUMI_FWD(v)));
-                return flatten_all(KUMI_FWD(tmp), KUMI_FWD(f));
+                , unwrap_field_value(KUMI_FWD(v))), KUMI_FWD(f));
             }
             else
-              return builder<base_t>::make(field_name<unwrap_name_v<std::remove_cvref_t<decltype(v)>>>{} = KUMI_FWD(f)(unwrap_field_value(KUMI_FWD(v))) ); 
+              return builder<base_t>::make(field_name<unwrap_name_v<std::remove_cvref_t<V>>>{} = KUMI_FWD(f)(unwrap_field_value(KUMI_FWD(v))) ); 
         };
         return builder<base_t>::make( cat( v_or_r(KUMI_FWD(m))...));
     };
 
 
          if constexpr(sized_product_type<Tuple,0>)  return ts;
-    else if constexpr ( record_type<base_t> )       return kumi::apply_field(flattener_tmp, ts);
+    else if constexpr ( record_type<base_t> )       return kumi::_::apply_field(flattener_tmp, ts);
     else                                            return kumi::apply(flattener, ts);
   }
 
@@ -166,10 +170,13 @@ namespace kumi
             if constexpr ( record_type<unwrap_field_capture_t<std::remove_cvref_t<V>>>)
             { 
                 constexpr auto name = unwrap_name_v<std::remove_cvref_t<V>>;
-                return flatten_all(apply_field([&](auto&&... elt)
+                return flatten_all(_::apply_field([&](auto&&... elt)
                         {
-                            return builder<base_t>::make((field_name<str_compose_v<name, unwrap_name_v<std::remove_cvref_t<decltype(elt)>>>>{} = unwrap_field_value(KUMI_FWD(elt)))...);
-                        }, unwrap_field_value(v)));
+                            return builder<base_t>::make((field_capture<
+                                                            str_compose_v<name, unwrap_name_v<std::remove_cvref_t<decltype(elt)>>>
+                                                            , unwrap_field_capture_t<std::remove_cvref_t<decltype(elt)>>>
+                            {unwrap_field_value(KUMI_FWD(elt))})...);
+                        }, unwrap_field_value(KUMI_FWD(v))));
                 
             }
             else
@@ -180,7 +187,7 @@ namespace kumi
 
 
          if constexpr(sized_product_type<Tuple,0>)  return ts;
-    else if constexpr ( record_type<Tuple> )        return kumi::apply_field(flattener_tmp, ts);
+    else if constexpr ( record_type<Tuple> )        return kumi::_::apply_field(flattener_tmp, ts);
     else                                            return kumi::apply(flattener, ts);
   }
 

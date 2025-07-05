@@ -126,7 +126,7 @@ namespace kumi
     {
       auto const call = [&]<std::size_t N, typename... Ts>(index_t<N> idx, Ts &&... args)
       {
-        return f(idx, unwrap_if_record<Ts>(get<N>(args))...);
+        return f(idx, get<N>(args)...);
       };
 
       return [&]<std::size_t... I>(std::index_sequence<I...>)

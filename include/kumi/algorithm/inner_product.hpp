@@ -94,8 +94,8 @@ namespace kumi
     {
       return [&]<std::size_t... I>(std::index_sequence<I...>)
       {
-        return  (  _::foldable {sum, prod(unwrap_field_value(get<field_name<member_name_v<I,base_t>>{}>(KUMI_FWD(s1))),
-                                          unwrap_field_value(get<field_name<member_name_v<I,base_t>>{}>(KUMI_FWD(s2))))}
+        return  (  _::foldable {sum, prod(get<field_name<member_name_v<I,base_t>>{}>(KUMI_FWD(s1)),
+                                          get<field_name<member_name_v<I,base_t>>{}>(KUMI_FWD(s2)))}
                 >> ...
                 >> _::foldable {sum, init}
                 ).value;
@@ -126,8 +126,8 @@ namespace kumi
     {
       return [&]<std::size_t... I>(std::index_sequence<I...>)
       {
-        return (init + ... + (unwrap_field_value(get<field_name<member_name_v<I,base_t>>{}>(s1)) 
-                            * unwrap_field_value(get<field_name<member_name_v<I,base_t>>{}>(s2))));
+        return (init + ... + (get<field_name<member_name_v<I,base_t>>{}>(s1) 
+                            * get<field_name<member_name_v<I,base_t>>{}>(s2)));
       }(std::make_index_sequence<size<S1>::value>());
     }
     else

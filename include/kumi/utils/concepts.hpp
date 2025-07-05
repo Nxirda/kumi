@@ -249,7 +249,8 @@ namespace kumi
   //! the corresponding field in `U` 
   //================================================================================================
   template<typename T, typename... Us>
-  concept compatible_product_types = ( product_type<T> && ( product_type<Us> && ...))  
-  && ((!record_type<T> && (!record_type<Us> && ...)) 
-  || (record_type<T> && (record_type<Us> && ...) && (equally_named<T, Us> && ...)));
+  concept compatible_product_types = (product_type<T> && ( product_type<Us> && ...))  && 
+  ( (!record_type<T> && (!record_type<Us> && ...)) 
+    || (record_type<T> && (record_type<Us> && ...) && (equally_named<T, Us> && ...))
+  );
 }

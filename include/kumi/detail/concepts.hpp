@@ -116,21 +116,11 @@ namespace kumi::_
       }() && ...);
   };
 
-  /// Wrong
-  /*template<template<class...> class Box, typename... From, typename... To>
-  struct is_fieldwise_ordered<Box<From...>, Box<To...>>
-  {
-    static constexpr bool value = (... && ordered<From,To> );
-  };*/
-
   template<typename From, typename To>
   concept fieldwise_convertible = is_fieldwise_convertible<From, To>::value;
 
   template<typename From, typename To>
   concept fieldwise_constructible = is_fieldwise_constructible<From, To>::value;
-
-  //template<typename From, typename To>
-  //concept fieldwise_ordered = is_fieldwise_ordered<From, To>::value;
 
   //================================================================================================
   // Concept machinery to make our algorithms SFINAE friendly

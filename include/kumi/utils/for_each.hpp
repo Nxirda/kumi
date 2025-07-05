@@ -123,7 +123,7 @@ namespace kumi
   //! @see kumi::for_each
   //!
   //! ## Example
-  //! @include doc/for_each_index.cpp
+  //! @include doc/for_each_field.cpp
   //================================================================================================
   template<typename Function, record_type Tuple, record_type... Tuples>
   requires ( compatible_product_types<std::remove_cvref_t<Tuple>, std::remove_cvref_t<Tuples>...> )

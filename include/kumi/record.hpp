@@ -369,11 +369,11 @@ namespace kumi
   //! @include doc/forward_as_record.cpp
   //================================================================================================
   template<typename... Ts> 
-  requires ( (sizeof...(Ts)==0) || (is_fully_named<Ts...> && uniquely_named<Ts...> ))
-  KUMI_TRIVIAL_NODISCARD constexpr record<field_capture<unwrap_name_v<Ts>, std::add_rvalue_reference_t<unwrap_field_capture_t<std::remove_cvref_t<Ts>>>>...>
+  requires ( (sizeof...(Ts)==0) || (is_fully_named<std::remove_cvref_t<Ts>...> && uniquely_named<std::remove_cvref_t<Ts>...> ))
+  KUMI_TRIVIAL_NODISCARD constexpr record<field_capture<unwrap_name_v<std::remove_cvref_t<Ts>>, result::unwrap_field_value_t<Ts>>...>
   forward_as_record(Ts &&... ts)
   {
-    return { (field_capture<unwrap_name_v<Ts>, std::add_rvalue_reference_t<unwrap_field_capture_t<std::remove_cvref_t<Ts>>>>               
+    return { (field_capture<unwrap_name_v<std::remove_cvref_t<Ts>>, result::unwrap_field_value_t<Ts>>
              { unwrap_field_value(KUMI_FWD(ts))}
              )... };
   }
@@ -411,11 +411,11 @@ namespace kumi
   template<record_type Type>
   KUMI_TRIVIAL_NODISCARD constexpr auto to_ref(Type&& t)
   {
-    return apply( [](auto&&... elems)
+    return _::apply_field( [](auto&&... elems)
                   {
                     return kumi::forward_as_record(KUMI_FWD(elems)...);
                   }
-                , from_record<as_tuple_t<std::remove_cvref_t<Type>>>(KUMI_FWD(t))
+                , KUMI_FWD(t)
                 );
   }
 

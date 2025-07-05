@@ -101,16 +101,31 @@ namespace kumi
     template<typename Function, product_type Tuple>
     using apply_t = typename apply<Function,Tuple>::type;
   }
- 
-  template<typename Function, record_type Tuple>
-  constexpr decltype(auto) apply_field(Function &&f, Tuple &&t) 
-  //noexcept(_::supports_nothrow_apply<Function &&, Tuple &&>)
-  //requires _::supports_apply<Function&&, Tuple&&>
+
+  namespace _
   {
-      return [&]<std::size_t... I>(std::index_sequence<I...>) -> decltype(auto)
+      template<typename Function, record_type Record>
+      constexpr decltype(auto) apply_field(Function &&f, Record &&t) 
+      //noexcept(_::supports_nothrow_apply<Function &&, Record &&>)
+      //requires _::supports_apply<Function&&, Record&&>
       {
-        return KUMI_FWD(f)(get<I>(KUMI_FWD(t))...);
+          return [&]<std::size_t... I>(std::index_sequence<I...>) -> decltype(auto)
+          {
+            return KUMI_FWD(f)(get<I>(KUMI_FWD(t))...);
+          }
+         (std::make_index_sequence<size<Record>::value>());;
       }
-     (std::make_index_sequence<size<Tuple>::value>());;
+    
+      namespace result
+      {
+        template<typename Function, record_type Record>
+        struct apply_field
+        {
+          using type = decltype(kumi::_::apply_field(std::declval<Function>(), std::declval<Record>()));
+        };
+
+        template<typename Function, record_type Record>
+        using apply_field_t = typename apply_field<Function,Record>::type;
+      }
   }
 }

@@ -62,6 +62,7 @@ namespace kumi
   //================================================================================================
   template<product_type... Ts>
   [[nodiscard]] constexpr auto cartesian_product(Ts&&... ts)
+  requires ( (!record_type<Ts> && ... ) || (record_type<Ts> && ...) )
   {
     constexpr auto idx = [&]<std::size_t... I>(std::index_sequence<I...>)
     {
@@ -76,10 +77,11 @@ namespace kumi
     auto maps = [&]<std::size_t... I>(auto k, std::index_sequence<I...>)
     {
       auto tps = kumi::forward_as_tuple(ts...);
-      using type_t = builder_t< ret_type, std::tuple_element_t< idx.data[k].data[I]
-                                                        , std::remove_cvref_t<std::tuple_element_t<I,decltype(tps)>>
-                                                        >...
-                                  >;
+      using type_t = builder_t< ret_type
+                        , std::tuple_element_t< idx.data[k].data[I]
+                            , std::remove_cvref_t<std::tuple_element_t<I,decltype(tps)>>
+                            >...
+                        >;
       return type_t{get<idx.data[k].data[I]>(get<I>(tps))...};
     };
 

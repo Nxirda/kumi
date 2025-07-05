@@ -103,11 +103,11 @@ namespace kumi
 
   //================================================================================================
   //! @ingroup utility
-  //! @brief Converts a kumi::product_type to an instance kumi::record
+  //! @brief Converts a kumi::record_type to an instance kumi::record
   //!
-  //! Constructs an instance kumi::record from the elements of the kumi::product_type parameters
+  //! Constructs an instance kumi::record from the elements of the kumi::record_type parameters
   //!
-  //! @param  t    kumi::product_type to convert
+  //! @param  t    kumi::record_type to convert
   //! @return An instance of kumi::record constructed from each elements of `t` in order.
   //!
   //! ## Example

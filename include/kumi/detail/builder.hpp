@@ -65,10 +65,7 @@ namespace kumi
     template<typename... Args>
     static constexpr auto make(Args&&... args)
     {
-      //if constexpr( requires{ Box{KUMI_FWD(args)...}; })
-        return Box{ KUMI_FWD(args)... };
-      //else
-        //return kumi::tuple{KUMI_FWD(args)...};
+      return Box{ KUMI_FWD(args)... };
     }
   };
 
