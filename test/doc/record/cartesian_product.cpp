@@ -10,9 +10,9 @@ int main()
 {
   using namespace kumi::literals;
 
-  auto status = kumi::record{"x"_f = true, "y"_f = false};
-  auto id     = kumi::record{"z"_f = 'a', "t"_f = 'b', "m"_f = 'c'};
-  auto value  = kumi::record{"a"_f = 1.0,"b"_f = 2.1, "c"_f = 4.2, "d"_f = 8.4};
+  auto status = kumi::record{"a"_f = true, "b"_f = false};
+  auto id     = kumi::record{"aa"_f = 'a', "bb"_f = 'b', "cc"_f = 'c'};
+  auto value  = kumi::record{"aaa"_f = 1.0,"bbb"_f = 2.1, "ccc"_f = 4.2, "d"_f = 8.4};
 
   auto r = kumi::cartesian_product( status, id, value );
 
@@ -24,6 +24,4 @@ int main()
                         }
                       , r
                       );
-    
-  static_assert(std::is_same_v<kumi::template_of_t<decltype(r)>, kumi::template_of_t<decltype(status)>> );
 }

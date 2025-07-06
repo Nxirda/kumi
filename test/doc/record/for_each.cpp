@@ -3,12 +3,14 @@
   Copyright : KUMI Project Contributors
   SPDX-License-Identifier: BSL-1.0
 **/
-#include <kumi/tuple.hpp>
+#include <kumi/record.hpp>
 #include <iostream>
 
 int main()
 {
-  auto t = kumi::tuple{ 1, 2.3, 0.43f };
+  using namespace kumi::literals;
+
+  auto t = kumi::record{ "a"_f = 1, "b"_f = 2.3, "c"_f = 0.43f };
 
   kumi::for_each( [](auto& m) { m *= 10; }
                 , t

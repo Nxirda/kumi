@@ -16,7 +16,7 @@ int main()
   std::cout << kumi::get<1>(r) << "\n";
   std::cout << kumi::get<2>(r) << "\n";
 
-  kumi::get<3>(r)++;
+  kumi::get<3>(r).value++;
 
   std::cout << kumi::get<3>(r) << "\n";
 }

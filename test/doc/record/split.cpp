@@ -3,14 +3,15 @@
   Copyright : KUMI Project Contributors
   SPDX-License-Identifier: BSL-1.0
 **/
-#include <kumi/tuple.hpp>
+#include <kumi/record.hpp>
 #include <iostream>
 
 int main()
 {
   using namespace kumi::literals;
 
-  kumi::tuple a = { 1, 2.3, 4.5f,'6',"7", short{89} };
+  kumi::record a = { "a"_f = 1, "b"_f = 2.3, "c"_f = 4.5f,"d"_f = '6',
+                     "e"_f = "7", "f"_f = short{89} };
 
   auto[first, second] = split(a, 3_c);
 

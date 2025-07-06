@@ -3,10 +3,10 @@
   Copyright : KUMI Project Contributors
   SPDX-License-Identifier: BSL-1.0
 **/
-#include <kumi/record.hpp>
+#include <kumi/kumi.hpp>
 #include <iostream>
 
-template<kumi::product_type Record>
+template<kumi::record_type Record>
 void print(std::ostream& os, Record const& t)
 {
   kumi::apply
@@ -27,7 +27,7 @@ int main()
 {
   using namespace kumi::literals;
 
-  auto r = kumi::record{"x"_f = 1, "y"_f = 2., "z"_f = 3.f};
+  auto r = kumi::record{"a"_f = 1, "b"_f = 2., "c"_f = 3.f};
 
   // Simple operation: sum all values
   std::cout << kumi::apply( [](auto... m) { return (m + ...); }, r) << "\n";

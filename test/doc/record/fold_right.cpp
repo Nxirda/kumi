@@ -3,13 +3,15 @@
   Copyright : KUMI Project Contributors
   SPDX-License-Identifier: BSL-1.0
 **/
-#include <kumi/tuple.hpp>
+#include <kumi/record.hpp>
 #include <iostream>
 #include <vector>
 
 int main()
 {
-  auto t = kumi::tuple{2.,1,short{55},'z'};
+  using namespace kumi::literals;
+
+  auto t = kumi::record{"a"_f = 2.,"b"_f = 1,"c"_f = short{55},"d"_f = 'z'};
 
   auto output  = kumi::fold_right( [](auto a, auto m) { a.push_back(sizeof(m)); return a; }
                                 , t
@@ -19,7 +21,8 @@ int main()
   for(auto s : output) std::cout << s << " ";
   std::cout << "\n";
 
-  auto u = kumi::tuple{1,3,2,4,0,5,9,6,7};
+  auto u = kumi::record{"a"_f = 1,"b"_f = 3,"c"_f = 2,"d"_f = 4,"e"_f = 0,
+                        "f"_f = 5,"g"_f = 9,"h"_f = 6,"i"_f = 7};
 
   std::cout << kumi::fold_right(  [](auto acc, auto e)
                                   {

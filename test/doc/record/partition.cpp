@@ -3,17 +3,19 @@
   Copyright : KUMI Project Contributors
   SPDX-License-Identifier: BSL-1.0
 **/
-#include <kumi/tuple.hpp>
+#include <kumi/record.hpp>
 #include <type_traits>
 #include <iostream>
 
 int main()
 {
+  using namespace kumi::literals;
+
   int     a = 4;
   double  b = 3.1415;
   float   c = 0.01f;
 
-  auto original = kumi::tuple{a,&a,b,&b,c,&c,'z',nullptr};
+  auto original = kumi::record{"a"_f = a,"b"_f = &a,"c"_f = b,"d"_f = &b,"e"_f = c,"f"_f = &c,"g"_f = 'z',"h"_f = nullptr};
   std::cout << original << "\n";
 
   std::cout << "Pointers first: " << kumi::partition<std::is_pointer>(original) << "\n";

@@ -17,6 +17,4 @@ int main()
   auto r = kumi::flatten( kumi::record{"id"_f = 3.5, "nbs"_f = nbrs, "data"_f = 'z',
                                       "suite"_f = more_nbrs, "x"_f = 5.35f, "alpha"_f = ltrs} );
   std::cout << r << "\n";
-
-  void *ptr = r;
 }

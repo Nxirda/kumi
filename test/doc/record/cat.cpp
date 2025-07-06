@@ -18,6 +18,4 @@ int main()
 
   std::cout << a << " " << b << " " << c << "\n";
   std::cout << abc << "\n";
-
-  void *ptr = abc;
 }
