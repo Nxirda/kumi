@@ -11,10 +11,10 @@
 
 TTS_CASE("Check result::reorder<Tuple,I...> behavior")
 {
-  using tuple_t = kumi::tuple<char,short,int,double>;
+  using tuple_t = kumi::tuple<char,short&,int,double>;
 
   TTS_TYPE_IS( (kumi::result::reorder_t<tuple_t,0,1,2,3>), tuple_t                              );
-  TTS_TYPE_IS( (kumi::result::reorder_t<tuple_t,1,2,3,0>), (kumi::tuple<short,int,double,char>) );
+  TTS_TYPE_IS( (kumi::result::reorder_t<tuple_t,1,2,3,0>), (kumi::tuple<short&,int,double,char>) );
   TTS_TYPE_IS( (kumi::result::reorder_t<tuple_t,3,3>    ), (kumi::tuple<double,double>)         );
   TTS_TYPE_IS( (kumi::result::reorder_t<tuple_t>        ), kumi::tuple<>                        );
 };
