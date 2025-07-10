@@ -57,6 +57,31 @@ template<typename Head, typename... Tail> struct std::tuple_element<0, kumi::rec
   using type = Head;
 };
 
+///
+template<auto Field, typename Record> struct named_element;
+
+// 
+template<auto Field, auto Name, typename T, typename... Tail>
+struct named_element<Field, kumi::tuple< kumi::field_capture<Name,T>, Tail... >>
+{
+  using type = T;
+};
+
+template<auto Field, typename Head, typename... Tail>
+struct named_element<Field, kumi::tuple<Head, Tail...>>
+  : named_element<Field, kumi::tuple<Tail...>>
+{ };
+
+template<auto Field, typename... Fs>
+struct named_element<Field, kumi::tuple<Fs...> const>
+{
+  using type = typename named_element<Field, kumi::tuple<Fs...>>::type const;
+};
+
+template<auto Field, typename Record>
+using named_element_t = typename named_element<Field, Record>::type;
+
+
 template<typename... Ts>
 struct std::tuple_size<kumi::record<Ts...>> : std::integral_constant<std::size_t, sizeof...(Ts)>
 {

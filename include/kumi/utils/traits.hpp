@@ -269,7 +269,7 @@ namespace kumi
   };
 
   template<std::size_t I, typename T> using raw_member_t = typename raw_member<I,T>::type;
- 
+
   //================================================================================================
   //! @ingroup traits
   //! @brief Provides indexed access to the types of the elements of a kumi::product_type and 

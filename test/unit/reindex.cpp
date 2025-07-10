@@ -38,11 +38,11 @@ TTS_CASE("Check result::reindex<Tuple, Idx_tuple, Idx_tuples...> behavior")
   TTS_TYPE_IS( (kumi::result::reindex_t<base_tuple, duplicates_t>), (kumi::tuple<int, float, char*, float, int>));
   
   TTS_TYPE_IS( (kumi::result::reindex_t<base_tuple, complex_t>), 
-                (kumi::tuple<double, short, int, kumi::tuple<long, float, char*>> ));
+                (kumi::tuple<double&&, short&, int, kumi::tuple<const long&, float, char*>> ));
 };
 
-/*
-TTS_CASE("Check result::reindex<Record, Name_tuple, Name_tuples...> behavior")
+
+/*TTS_CASE("Check result::reindex<Record, Name_tuple, Name_tuples...> behavior")
 {
   using base_record = kumi::record< kumi::field_capture<"a", int        >,
                                     kumi::field_capture<"b", float      >,
@@ -54,11 +54,11 @@ TTS_CASE("Check result::reindex<Record, Name_tuple, Name_tuples...> behavior")
   using ref_t           = kumi::tuple<kumi::field_name<"a">, kumi::field_name<"b">, kumi::field_name<"c">
                                     , kumi::field_name<"d">, kumi::field_name<"e">, kumi::field_name<"d">>;
   
-  using duplicates_t    = kumi::tuple<kumi::field_name<"a">, kumi::field_name<"b">, kumi::field_name<"c">,
-                                      kumi::tuple<kumi::field_name<"a">, kumi::field_name<"b">, kumi::field_name<"c">>>;
+  //using duplicates_t    = kumi::tuple<kumi::field_name<"a">, kumi::field_name<"b">, kumi::field_name<"c">,
+  //                                    kumi::field_capture<"aa", kumi::tuple<kumi::field_name<"a">, kumi::field_name<"b">, kumi::field_name<"c">>>>;
 
-  TTS_TYPE_IS((kumi::result::reindex_field_t<base_record, kumi::tuple<>>), (kumi::record<>));
-  TTS_TYPE_IS((kumi::result::reindex_field_t<kumi::record<>, ref_t>), (kumi::record<>));
+  //TTS_TYPE_IS((kumi::result::reindex_field_t<base_record, kumi::tuple<>>), (kumi::record<>));
+  //TTS_TYPE_IS((kumi::result::reindex_field_t<kumi::record<>, ref_t>), (kumi::record<>));
 
   TTS_TYPE_IS( (kumi::result::reindex_field_t<base_record, ref_t>), (base_record));
 
@@ -66,9 +66,10 @@ TTS_CASE("Check result::reindex<Record, Name_tuple, Name_tuples...> behavior")
              , (kumi::record<kumi::field_capture<"a", int>,
                              kumi::field_capture<"b", float>,
                              kumi::field_capture<"c", char*>,
-                             kumi::record<  kumi::field_capture<"a", int>,
-                                            kumi::field_capture<"b", float>,
-                                            kumi::field_capture<"c", char*>
-                                         >
+                             kumi::field_capture<"aa",  kumi::record<  kumi::field_capture<"a", int>,
+                                                        kumi::field_capture<"b", float>,
+                                                        kumi::field_capture<"c", char*>
+                                                >
+                                            >
                             >));
 };*/

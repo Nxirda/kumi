@@ -49,12 +49,12 @@ namespace kumi
     {
       return kumi::apply([&](auto &&... m)
       {
-        [[maybe_unused]]auto v_or_t = [&]<typename V>(V&& v) 
+        [[maybe_unused]] auto v_or_t = [&]<typename V>(V&& v) 
         {
-          if constexpr(product_type<V>) return reindex(KUMI_FWD(tuple), KUMI_FWD(v));
-          else                          return kumi::get<v>(KUMI_FWD(tuple));
+          if constexpr(product_type<V>) return kumi::make_tuple(reindex(KUMI_FWD(tuple), KUMI_FWD(v)));
+          else                          return kumi::tuple<element_t<v, Tuple>>{ kumi::get<v>(KUMI_FWD(tuple)) };
         };                
-        return kumi::make_tuple(v_or_t(KUMI_FWD(m))...);
+        return kumi::cat(v_or_t(KUMI_FWD(m))...);
       }
     , layout);
 
@@ -79,21 +79,22 @@ namespace kumi
   template <record_type Record, product_type Layout>
   [[nodiscard]] constexpr auto reindex_field(Record && tuple, Layout && layout)
   {
-    // I think it s necessary to do a make tuple in case we have only 1 tuple
-    if constexpr (sized_product_type<Record, 0>) return KUMI_FWD(tuple);
-    else if constexpr (sized_product_type<Layout, 0>) return kumi::record{};
+    if constexpr (sized_product_type<Record, 0>)        return KUMI_FWD(tuple);
+    else if constexpr (sized_product_type<Layout, 0>)   return kumi::record{};
     else
     {
       return kumi::apply([&](auto &&... m)
       {
         [[maybe_unused]]auto v_or_t = [&]<typename V>(V&& v)         
         {
-          if constexpr(product_type<V>) return reindex(KUMI_FWD(tuple), KUMI_FWD(v));
+          if constexpr( product_type<unwrap_field_capture_t<std::remove_cvref_t<V>>>) 
+            return kumi::make_record( unwrap_name_v<std::remove_cvref_t<decltype(v)>>
+                                    , reindex(KUMI_FWD(tuple), KUMI_FWD(v)));
           else      
           {
             constexpr auto name = field_name<std::remove_cvref_t<V>::name>{};
             return kumi::make_record
-                  ( kumi::field_capture<std::remove_cvref_t<V>::name, decltype(kumi::get<name>(KUMI_FWD(tuple)))>
+                  ( kumi::field_capture<std::remove_cvref_t<V>::name, named_element_t<name, Record>>
                   {kumi::get<name>(KUMI_FWD(tuple))});
           }
         };                
