@@ -8,8 +8,6 @@
 #ifndef KUMI_RECORD_HPP_INCLUDED
 #define KUMI_RECORD_HPP_INCLUDED
 
-#include <kumi/product_types/tuple.hpp>
-
 namespace kumi
 {
   //================================================================================================
@@ -40,6 +38,7 @@ namespace kumi
     //==============================================================================================
 
     //==============================================================================================
+    //! @ingroup record
     //! @brief Extracts the Ith field from a kumi::record
     //!
     //! @note   Does not participate in overload resolution if `I` is not in [0, sizeof...(Ts)).
@@ -124,6 +123,7 @@ namespace kumi
     }
 
     //==============================================================================================
+    //! @ingroup record
     //! @brief Extracts the element of the field labeled Name from a kumi::record
     //!
     //! @note Does not participate in overload resolution if the name is not present in the record
@@ -173,16 +173,26 @@ namespace kumi
     //! @name Properties
     //! @{
     //==============================================================================================
-    /// Returns the number of elements in a kumi::record
-    [[nodiscard]] KUMI_ABI static constexpr auto size() noexcept { return sizeof...(Ts); }
+    
+    /// @ingroup record
+    /// @return Returns the number of elements in a kumi::record
+    [[nodiscard]] KUMI_ABI static constexpr  auto size() noexcept { return sizeof...(Ts); }
 
-    /// Returns `true` if a kumi::record contains 0 elements
-    [[nodiscard]] KUMI_ABI static constexpr bool empty() noexcept { return sizeof...(Ts) == 0; }
+    /// @ingroup record
+    /// @return Returns `true` if a kumi::record contains 0 elements
+    [[nodiscard]] KUMI_ABI static constexpr  bool empty() noexcept { return sizeof...(Ts) == 0; }
 
-    /// Returns the names of the elements in a kumi::record
-    [[nodiscard]] KUMI_ABI static constexpr auto names() noexcept { return tuple{name_of(as<Ts>{})...}; };
+    /// @ingroup record
+    /// @return Returns the names of the elements in a kumi::record
+    [[nodiscard]] KUMI_ABI static constexpr auto names() noexcept
+    {
+        return tuple{ name_of(as<Ts>{})... };
+    };
 
-    /// Returns references to the values of the element in a kumi::record
+    //==============================================================================================
+    //! @ingroup record
+    //! @return Return references to the values of the elements of a kumi::record as a kumi::tuple
+    //==============================================================================================
     [[nodiscard]] KUMI_ABI constexpr auto values() noexcept
     {
       return [&]<std::size_t... I>(std::index_sequence<I...>) {
@@ -203,7 +213,8 @@ namespace kumi
     //==============================================================================================
 
     //==============================================================================================
-    //! @brief Replaces the contents of the record with the contents of another record.
+    //! @ingroup record
+    //! @brief Replaces the content of the record with the content of another record.
     //! @param other kumi::record to copy or move from
     //! @return `*this`
     //==============================================================================================
@@ -382,7 +393,6 @@ namespace kumi
 
   //================================================================================================
   //! @ingroup record
-  //! @related kumi::record
   //! @brief Creates a record object, deducing the target type from the types of arguments.
   //!
   //! @param ts	Zero or more lvalue arguments to construct the record from.
@@ -400,7 +410,6 @@ namespace kumi
 
   //================================================================================================
   //! @ingroup record
-  //! @related kumi::record
   //! @brief Creates a kumi::record of references given a reference to a kumi::record_type.
   //!
   //! @param    r Record whose elements are to be referenced.
@@ -476,7 +485,7 @@ namespace kumi
   //================================================================================================
 
   //================================================================================================
-  //! @name Accessors
+  //! @name Record accessors
   //! @{
   //================================================================================================
 
@@ -487,39 +496,50 @@ namespace kumi
   //! @note Does not participate in overload resolution if `I` is not in [0, sizeof...(Ts)).
   //! @tparam   I Compile-time index of the field to access
   //! @param    r Record to index
-  //! @return   A reference to the selected field of r.
-  //! @related kumi::record
+  //! @return   A reference to the selected field of t.
   //!
   //! ## Example:
   //! @include doc/record/api/get.cpp
   //================================================================================================
   template<std::size_t I, typename... Ts>
-  requires(I < sizeof...(Ts))
-  [[nodiscard]] KUMI_ABI constexpr decltype(auto) get(record<Ts...>& r) noexcept
+  requires( I < sizeof...(Ts) ) [[nodiscard]] KUMI_ABI constexpr decltype(auto)
+  get(record<Ts...> &r) noexcept
+  #if defined(KUMI_DOXYGEN_INVOKED)
+  -> kumi::element_t<I, record<Ts...>&>
+  #endif 
   {
     return r[index<I>];
   }
 
   /// @overload
   template<std::size_t I, typename... Ts>
-  requires(I < sizeof...(Ts))
-  [[nodiscard]] KUMI_ABI constexpr decltype(auto) get(record<Ts...>&& r) noexcept
+  requires( I < sizeof...(Ts) ) [[nodiscard]] KUMI_ABI constexpr decltype(auto)
+  get(record<Ts...> &&r) noexcept
+  #if defined(KUMI_DOXYGEN_INVOKED)
+  -> kumi::element_t<I, record<Ts...>&&>
+  #endif 
   {
     return static_cast<record<Ts...>&&>(r)[index<I>];
   }
 
   /// @overload
   template<std::size_t I, typename... Ts>
-  requires(I < sizeof...(Ts))
-  [[nodiscard]] KUMI_ABI constexpr decltype(auto) get(record<Ts...> const& r) noexcept
+  requires( I < sizeof...(Ts) ) [[nodiscard]] KUMI_ABI constexpr decltype(auto)
+  get(record<Ts...> const &r) noexcept
+  #if defined(KUMI_DOXYGEN_INVOKED)
+  -> kumi::element_t<I, record<Ts...> const&>
+  #endif 
   {
     return r[index<I>];
   }
 
   /// @overload
   template<std::size_t I, typename... Ts>
-  requires(I < sizeof...(Ts))
-  [[nodiscard]] KUMI_ABI constexpr decltype(auto) get(record<Ts...> const&& r) noexcept
+  requires( I < sizeof...(Ts) ) [[nodiscard]] KUMI_ABI constexpr decltype(auto)
+  get(record<Ts...> const &&r) noexcept
+  #if defined(KUMI_DOXYGEN_INVOKED)
+  -> kumi::element_t<I, record<Ts...>const &&>
+  #endif 
   {
     return static_cast<record<Ts...> const&&>(r)[index<I>];
   }
@@ -531,8 +551,7 @@ namespace kumi
   //! @note Does not participate in overload resolution if the names are not unique
   //! @tparam   Name Non type template parameter name of the field to access
   //! @param    r Record to index
-  //! @return   A reference to the element of the selected field of r.
-  //! @related kumi::record
+  //! @return   A reference to the element of the selected field of t.
   //!
   //! ## Example:
   //! @include doc/record/api/named_get.cpp
