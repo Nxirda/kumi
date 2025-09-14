@@ -471,7 +471,6 @@ namespace kumi
   //! @tparam   I Compile-time index of the element to access
   //! @param    t Tuple to index
   //! @return   A reference to the selected element of t.
-  //! @related kumi::tuple
   //!
   //! ## Example:
   //! @include doc/get.cpp
@@ -515,7 +514,6 @@ namespace kumi
   //! @tparam   Name Non type template parameter name of the element to access
   //! @param    t Tuple to index
   //! @return   A reference to the selected element of t.
-  //! @related kumi::tuple
   //!
   //! ## Example:
   //! @include doc/named_get.cpp
@@ -563,7 +561,6 @@ namespace kumi
   //! @tparam   T Type of the element to access
   //! @param    t Tuple to index
   //! @return   A reference to the selected element of t.
-  //! @related kumi::tuple
   //!
   //! ## Example:
   //! @include doc/typed_get.cpp

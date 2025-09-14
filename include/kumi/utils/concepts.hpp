@@ -74,7 +74,7 @@ namespace kumi
   concept non_empty_product_type = product_type<T> && (size_v<std::remove_cvref_t<T>> != 0);
 
   //================================================================================================
-  //! @ingroup concepts
+  //! @ingroup tuple_concepts
   //! @brief Concept specifying is Product Type which types are all the same
   //!
   //! A type `T` models `kumi::homogenous_product_type` if it models `kumi::product_type` and
@@ -136,8 +136,8 @@ namespace kumi
 
    //================================================================================================
   //! @ingroup concepts
-  //! @brief Concept specifying if a parameter pack only holds kumi::field_captures each of their   
-  //!        each of their names are unique!
+  //! @brief Concept specifying if a parameter pack only holds kumi::field_captures and  
+  //!        each of their names are unique.
   //!
   //! @note  If there are no element in the parameter pack the concept returns true
   //================================================================================================
@@ -197,7 +197,6 @@ namespace kumi
 
   namespace _
   {
-
     template<typename T, typename U> struct has_same_field_names;
     template<typename T, typename U> struct check_named_equality;
 
@@ -241,7 +240,7 @@ namespace kumi
   concept equivalent = (size_v<T> == size_v<U>) && _::has_same_field_names_v<T,U>;
 
   //================================================================================================
-  //! @ingroup concepts
+  //! @ingroup record_concepts
   //! @brief Concept specifying if two product types are comparable by matching name 
   //!
   //! A type `T` models `kumi::named_equality_comparable<T,U>` if it's a product_type that satisfies 
@@ -253,11 +252,11 @@ namespace kumi
 
   //================================================================================================
   //! @ingroup concepts
-  //! @brief Concept specifying if two product types are comparable by matching name
+  //! @brief Concept specifying a list of product_types is only composed of kumi::tuples or 
+  //!         kumi::record with matching names
   //!
-  //! A type `T` models `kumi::named_equality_comparable<T,U>` if it's a product_type that satisfies
-  //! kumi::equivalent<T,U> and if each of its fields satisfies kumi::equality_comparable with
-  //! the corresponding field in `U`
+  //! A list of types models `kumi::compatible_product_types<T,Us...>` if either T all and Us are 
+  //! kumi::tuple or T and all Us are record types with the same names.
   //================================================================================================
   template<typename T, typename... Us>
   concept compatible_product_types = (product_type<T> && ( product_type<Us> && ...))  &&
