@@ -28,10 +28,10 @@ namespace kumi
   //! @code
   //! namespace kumi::result
   //! {
-  //!   template<product_type Tuple,std::size_t... Idx> struct reorder;
+  //!   template<product_type T,std::size_t... Idx> struct reorder;
   //!
-  //!   template<product_type Tuple,std::size_t... Idx>
-  //!   using reorder_t = typename reorder<Tuple,Idx...>::type;
+  //!   template<product_type T,std::size_t... Idx>
+  //!   using reorder_t = typename reorder<T,Idx...>::type;
   //! }
   //! @endcode
   //!
@@ -40,22 +40,22 @@ namespace kumi
   //! ## Example
   //! @include doc/reorder.cpp
   //================================================================================================
-  template<std::size_t... Idx, product_type Tuple>
-  requires((Idx < size_v<Tuple>) && ...)
-  [[nodiscard]] KUMI_ABI constexpr auto reorder(Tuple &&t)
+  template<std::size_t... Idx, product_type T>
+  requires((Idx < size_v<T>) && ...)
+  [[nodiscard]] KUMI_ABI constexpr auto reorder(T &&t)
   {
-    return _::builder<Tuple>::make( get<Idx>(KUMI_FWD(t))... );
+    return _::builder<T>::make( get<Idx>(KUMI_FWD(t))... );
   }
 
   namespace result
   {
-    template<product_type Tuple, std::size_t... Idx>
+    template<product_type T, std::size_t... Idx>
     struct reorder
     {
-      using type = decltype( kumi::reorder<Idx...>( std::declval<Tuple>() ) );
+      using type = decltype( kumi::reorder<Idx...>( std::declval<T>() ) );
     };
 
-    template<product_type Tuple, std::size_t... Idx>
-    using reorder_t = typename reorder<Tuple,Idx...>::type;
+    template<product_type T, std::size_t... Idx>
+    using reorder_t = typename reorder<T,Idx...>::type;
   }
 }
