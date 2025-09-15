@@ -13,7 +13,7 @@ namespace kumi
 {
   //================================================================================================
   //! @ingroup generators
-  //! @brief Reorder elements of a kumi::product_type
+  //! @brief Reorder elements of a product type
   //!
   //! This function does not participate in overload resolution if any IDx is outside [0, size_v<T>[.
   //!
@@ -21,8 +21,8 @@ namespace kumi
   //!       the fact they can appear multiple times.
   //!
   //! @tparam Idx     Reordered index of elements
-  //! @param  t kumi::product_type to reorder
-  //! @return A kumi::product_type equivalent to product_type(t[index<Idx>]...);
+  //! @param  t The product type to reorder
+  //! @return A product type equivalent to product_type(t[index<Idx>]...);
   //!
   //! ## Helper type
   //! @code
