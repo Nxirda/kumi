@@ -111,28 +111,30 @@ namespace kumi
   //! @brief Concept specifying if parameter pack containes a kumi::field_capture.
   //================================================================================================
   template<typename... Ts>
-  concept has_named_fields = ( ... || is_field_capture_v<Ts> );
+  concept has_named_fields = ( ... || is_field_capture_v<std::remove_cvref_t<Ts>> );
 
   //================================================================================================
   //! @ingroup concepts
   //! @brief Concept specifying if parameter pack contains only kumi::field_captures.
   //================================================================================================
   template<typename... Ts>
-  concept is_fully_named = ( ... && is_field_capture_v<Ts> );
+  concept is_fully_named = ( ... && is_field_capture_v<std::remove_cvref_t<Ts>> );
 
   //================================================================================================
   //! @ingroup concepts
   //! @brief Concept specifying if a parameter pack only holds unique types.
   //================================================================================================
   template<typename... Ts>
-  concept uniquely_typed = ( !has_named_fields<Ts...> ) && all_uniques_v<_::box<Ts>...>;
+  concept uniquely_typed = ( !has_named_fields<Ts...> ) 
+                        && all_uniques_v<_::box<std::remove_cvref_t<Ts>>...>;
 
   //================================================================================================
   //! @ingroup concepts
   //! @brief Concept specifying if a parameter pack only holds unique kumi::field_capture names.
   //================================================================================================
   template<typename... Ts>
-  concept uniquely_named = ( has_named_fields<Ts...> ) && all_unique_names_v<_::box<Ts>...>;
+  concept uniquely_named = ( has_named_fields<Ts...> ) 
+                        && all_unique_names_v<_::box<std::remove_cvref_t<Ts>>...>;
 
    //================================================================================================
   //! @ingroup concepts
