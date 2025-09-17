@@ -37,6 +37,8 @@ namespace kumi
 
     static constexpr bool is_field_capture = true;
     
+    friend constexpr auto operator<=>(field_capture, field_capture) noexcept = default;
+    
     //==============================================================================================
     /// @ingroup product_types 
     //! @related kumi::field_capture

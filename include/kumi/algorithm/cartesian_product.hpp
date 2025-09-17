@@ -8,6 +8,7 @@
 #pragma once
 
 #include <kumi/utils/pp_helpers.hpp>
+#include <kumi/detail/builder.hpp>
 
 namespace kumi
 {
@@ -61,7 +62,8 @@ namespace kumi
   //! @include doc/cartesian_product.cpp
   //================================================================================================
   template<product_type... Ts>
-  [[nodiscard]] KUMI_ABI constexpr auto cartesian_product(Ts&&... ts)
+  [[nodiscard]] KUMI_ABI constexpr auto cartesian_product(Ts &&... ts)
+  requires ( (!record_type<Ts> && ... ) || (record_type<Ts> && ...) )
   {
     constexpr auto idx = [&]<std::size_t... I>(std::index_sequence<I...>)
     {
@@ -74,11 +76,12 @@ namespace kumi
     auto maps = [&]<std::size_t... I>(auto k, std::index_sequence<I...>)
     {
       auto tps = kumi::forward_as_tuple(ts...);
-      using tuple_t = kumi::tuple < std::tuple_element_t< idx.data[k].data[I]
-                                                        , std::remove_cvref_t<std::tuple_element_t<I,decltype(tps)>>
-                                                        >...
-                                  >;
-      return tuple_t{kumi::get<idx.data[k].data[I]>(kumi::get<I>(tps))...};
+      using result_t = _::builder_make_t<element_t<0, decltype(tps)>
+                                          , std::tuple_element_t< idx.data[k].data[I]
+                                            , std::remove_cvref_t<std::tuple_element_t<I,decltype(tps)>>
+                                          >...
+                                        >;
+      return result_t{kumi::get<idx.data[k].data[I]>(kumi::get<I>(tps))...};
     };
 
     return [&]<std::size_t... N>(std::index_sequence<N...>)
