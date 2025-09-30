@@ -7,9 +7,6 @@
 //======================================================================================================================
 #pragma once
 
-#include <cstddef>
-#include <utility>
-
 namespace kumi::_
 {
   //====================================================================================================================
@@ -48,5 +45,3 @@ namespace kumi::_
   template<typename ISeq, typename... Ts>
   using make_binder_t = typename make_binder<ISeq,Ts...>::type;
 }
-
-#include <kumi/detail/optimized.hpp>

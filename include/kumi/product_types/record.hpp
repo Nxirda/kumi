@@ -26,7 +26,7 @@ namespace kumi
   //! @tparam Ts Sequence of fields stored inside kumi::record.
   //================================================================================================
   template<typename... Ts>
-  requires (( entirely_uniquely_named<Ts...> ))
+  requires ( entirely_uniquely_named<Ts...> )
   struct record<Ts...>
   {
     using is_product_type   = void;
@@ -251,11 +251,8 @@ namespace kumi
                                                          record const &t) noexcept
     {
       os << "( ";
-      kumi::for_each([&os](auto name, auto const &e)
-      {
-        os << name << " : " << e << " ";
-      }, t.names(), t.values());
-      os << ")";
+      kumi::_::apply_field([&](auto const&... elems) { ((os << elems << " "), ...); }, t);
+      os << ')';
 
       return os;
     }
@@ -455,6 +452,27 @@ namespace kumi
   //================================================================================================
   //! @}
   //================================================================================================
+  namespace _
+  {
+    template<record_type Record> 
+    struct builder<Record>
+    {
+      template<typename... Us>
+      using to = kumi::record<Us...>;
+
+      template<typename... Args>
+      static constexpr auto build(Args&&... args)
+      {
+        return record{ KUMI_FWD(args)... };
+      }
+
+      template<typename... Args>
+      static constexpr auto make(Args&&... args)
+      {
+        return make_record( KUMI_FWD(args)... );
+      }  
+    };
+  }
 }
 
 #endif

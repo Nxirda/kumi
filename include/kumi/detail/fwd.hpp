@@ -7,9 +7,16 @@
 //==================================================================================================
 #pragma once
 
-#if defined(__clang__)
-#  pragma clang diagnostic ignored "-Wmissing-braces"
-#endif
+namespace kumi
+{
+  // Forward declaration
+  struct unit;
+  template<typename... Ts>  struct tuple;
+  template<typename... Ts>  struct record;
 
-// Macro to replace std::forward. Better compile-time + less error-prone
-#define KUMI_FWD(...) static_cast<decltype(__VA_ARGS__) &&>(__VA_ARGS__)
+  //template<auto I, typename T>
+  //constexpr decltype(auto) get( T && ) noexcept;
+
+  //template<typename T, typename U>
+  //constexpr decltype(auto) get( U && ) noexcept;
+}

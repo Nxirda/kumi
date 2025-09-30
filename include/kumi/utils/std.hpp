@@ -7,12 +7,6 @@
 //==================================================================================================
 #pragma once
 
-#include <kumi/utils/concepts.hpp>
-#include <kumi/utils/traits.hpp>
-#include <array>
-#include <type_traits>
-#include <utility>
-
 #if !defined(KUMI_DOXYGEN_INVOKED)
 //==================================================================================================
 // Structured binding adaptation

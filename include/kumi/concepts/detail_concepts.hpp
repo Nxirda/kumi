@@ -7,11 +7,6 @@
 //==================================================================================================
 #pragma once
 
-#include <kumi/detail/stdfix.hpp>
-#include <kumi/utils/traits.hpp>
-#include <cstddef>
-#include <utility>
-
 namespace kumi::_
 {
   //==============================================================================================
@@ -137,7 +132,7 @@ namespace kumi::_
   template<typename F, typename PT>
   concept supports_nothrow_apply = []<std::size_t...N>(std::index_sequence<N...>)
   {
-      return std::is_nothrow_invocable<F, raw_member_t<N, PT>...>::value;
+    return std::is_nothrow_invocable<F, raw_member_t<N, PT>...>::value;
   }(std::make_index_sequence<size<PT>::value>{});
  
   template<typename F, typename... Tuples>
@@ -145,7 +140,7 @@ namespace kumi::_
   {
     return([]<std::size_t J>(std::integral_constant<std::size_t, J>)
     {   
-        return std::invocable<F, raw_member_t<J, Tuples>...>;
+      return std::invocable<F, raw_member_t<J, Tuples>...>;
     }(std::integral_constant<std::size_t, I>{}) && ...);
   }(std::make_index_sequence<(size<Tuples>::value, ...)>{});
 

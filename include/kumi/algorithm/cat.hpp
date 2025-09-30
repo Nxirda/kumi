@@ -7,8 +7,6 @@
 //==================================================================================================
 #pragma once
 
-#include <kumi/detail/builder.hpp>
-
 namespace kumi
 {
   //================================================================================================
@@ -35,7 +33,7 @@ namespace kumi
   //! @include doc/cat.cpp
   //================================================================================================
   template<product_type... Tuples>
-  [[nodiscard]] KUMI_ABI constexpr auto cat(Tuples&&... ts)
+  [[nodiscard]] KUMI_ABI constexpr auto cat(Tuples &&... ts)
   requires ( (!record_type<Tuples> && ... ) || (record_type<Tuples> && ...) )
   {
     if constexpr(sizeof...(Tuples) == 0) return tuple{};

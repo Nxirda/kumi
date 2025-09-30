@@ -7,12 +7,6 @@
 //==================================================================================================
 #pragma once
 
-#include <kumi/utils/pp_helpers.hpp>
-#include <kumi/utils/traits.hpp>
-#include <kumi/utils/concepts.hpp>
-#include <kumi/detail/abi.hpp>
-#include <kumi/detail/str.hpp>
-
 namespace kumi
 {
   //================================================================================================

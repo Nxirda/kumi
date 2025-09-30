@@ -7,6 +7,11 @@
 //==================================================================================================
 #pragma once
 
+#include <kumi/detail.hpp>
 #include <kumi/utils.hpp>
+#include <kumi/concepts.hpp>
+
+#include <kumi/utils/apply.hpp>
+
 #include <kumi/product_types.hpp>
 #include <kumi/algorithm.hpp>

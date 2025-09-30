@@ -7,9 +7,6 @@
 //==================================================================================================
 #pragma once
 
-#include <ostream>
-#include <kumi/detail/abi.hpp>
-
 namespace kumi
 {
   //================================================================================================
@@ -25,7 +22,7 @@ namespace kumi
 
     friend std::ostream& operator<<(std::ostream& os, unit)
     {
-      return os << '\'' << "none" << '\'';
+      return os << "\'none\'";
     }
   };
     

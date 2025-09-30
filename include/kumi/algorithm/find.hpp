@@ -24,7 +24,7 @@ namespace kumi
   {
     return kumi::apply([&](auto &&...m)
     {
-      bool checks[] = { p(m)...  };
+      bool checks[] = { p(m)... };
       for(std::size_t i=0;i<size_v<Tuple>;++i)
         if(checks[i]) return i;
       return size_v<Tuple>;

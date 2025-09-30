@@ -26,3 +26,16 @@ namespace kumi
 
 #include <kumi/product_types/tuple.hpp>
 #include <kumi/product_types/record.hpp>
+
+namespace kumi::result 
+{
+    template<product_type... Ts>
+    struct common_product_type 
+    {
+      using type = std::conditional_t<(record_type<Ts> && ...), record<>, tuple<>>;
+        //using type = decltype(kumi::common_product_type(std::declval<Ts>()...));
+    };
+
+    template<typename... Ts>
+    using common_product_type_t = typename common_product_type<Ts...>::type;
+}

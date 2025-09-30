@@ -7,13 +7,6 @@
 //==================================================================================================
 #pragma once
 
-#include <cstddef>
-#include <type_traits>
-#include <utility>
-
-#include <kumi/detail/unique.hpp>
-#include <kumi/detail/unit_type.hpp>
-
 namespace kumi
 {
   //================================================================================================
@@ -410,8 +403,4 @@ namespace kumi
 
   template<typename... Ts>
   inline constexpr auto all_unique_names_v = all_unique_names_t<Ts...>::value;
-
-  // Forward declaration
-  template<typename... Ts> struct tuple;
-  template<typename... Ts> struct record;
 }

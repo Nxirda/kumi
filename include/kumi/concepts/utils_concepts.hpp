@@ -7,13 +7,6 @@
 //==================================================================================================
 #pragma once
 
-#include <kumi/detail/concepts.hpp>
-#include <kumi/detail/str.hpp>
-#include <concepts>
-#include <cstddef>
-#include <type_traits>
-#include <utility>
-
 namespace kumi
 {
   //================================================================================================

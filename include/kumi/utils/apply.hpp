@@ -32,7 +32,6 @@ namespace kumi
     };
     template<typename T>
     using apply_object_unwrap_t = typename apply_object_unwrap<T>::type;
-
   }
 
   //================================================================================================

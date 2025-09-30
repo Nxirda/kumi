@@ -14,7 +14,7 @@
 namespace kumi
 {
   //================================================================================================
-  //! @defgroup utility   Helper Types and Functions
+  //! @defgroup concepts   Helper Types and Functions
   //! @brief    Tools for interacting with kumi::tuple
   //!
   //! @defgroup concepts     Tuple Related Concepts
@@ -24,15 +24,10 @@ namespace kumi
   //! @brief    Definition for kumi::tuple traits and extension points
   //================================================================================================
 }
-#include <array>
+#include <concepts>
 #include <cstddef>
-#include <ostream>
 #include <type_traits>
 #include <utility>
 
-#include <kumi/utils/unit_type.hpp>
-#include <kumi/utils/traits.hpp>
-#include <kumi/utils/field_capture.hpp>
-#include <kumi/utils/ct_helpers.hpp>
-#include <kumi/utils/builder.hpp>
-#include <kumi/utils/std.hpp>
+#include <kumi/concepts/detail_concepts.hpp>
+#include <kumi/concepts/utils_concepts.hpp>
