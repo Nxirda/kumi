@@ -175,6 +175,7 @@ namespace kumi
             &&  (sizeof...(Us) == sizeof...(Ts))
             &&  (!std::same_as<Ts, Us> && ...)
             )
+    [[deprecated("Use member_cast() or tuple_cast() instead")]]
     [[nodiscard]] inline constexpr auto cast() const
     {
       return apply([](auto &&...elems) { return tuple<Us...> {static_cast<Us>(elems)...}; }, *this);
@@ -306,6 +307,7 @@ namespace kumi
     //!
     //==============================================================================================
     template<typename Function>
+    [[deprecated("Tuples callable can be implemented by writing a wrapper")]] 
     KUMI_ABI constexpr auto operator()(Function &&f) const&
     noexcept(noexcept(kumi::apply(KUMI_FWD(f), *this)))
     -> decltype(kumi::apply(KUMI_FWD(f), *this))
@@ -313,6 +315,7 @@ namespace kumi
 
 #if !defined(KUMI_DOXYGEN_INVOKED)
     template<typename Function>
+    [[deprecated("Tuples callable can be implemented by writing a wrapper")]] 
     KUMI_ABI constexpr auto operator()(Function &&f) &
     noexcept(noexcept(kumi::apply(KUMI_FWD(f), *this)))
     -> decltype(kumi::apply(KUMI_FWD(f), *this))
@@ -321,6 +324,7 @@ namespace kumi
     }
 
     template<typename Function>
+    [[deprecated("Tuples callable can be implemented by writing a wrapper")]] 
     KUMI_ABI constexpr auto operator()(Function &&f) const &&noexcept(
     noexcept(kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this))))
     -> decltype(kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this)))
@@ -329,6 +333,7 @@ namespace kumi
     }
 
     template<typename Function>
+    [[deprecated("Tuples callable can be implemented by writing a wrapper")]] 
     KUMI_ABI constexpr auto operator()(Function &&f) &&noexcept(
     noexcept(kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this))))
     -> decltype(kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this)))

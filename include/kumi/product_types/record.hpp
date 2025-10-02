@@ -100,7 +100,7 @@ namespace kumi
     KUMI_ABI constexpr decltype(auto) operator[](field_name<Name> const&) &noexcept
     {
       constexpr auto idx = _::get_name_index<Name, Ts...>();
-      return unwrap_field_value(_::get_leaf<idx>(impl));
+      return _::get_field(_::get_leaf<idx>(impl));
     }
 
     /// @overload
@@ -109,7 +109,7 @@ namespace kumi
     KUMI_ABI constexpr decltype(auto) operator[](field_name<Name> const&) &&noexcept
     {
       constexpr auto idx = _::get_name_index<Name, Ts...>();
-      return unwrap_field_value(_::get_leaf<idx>(static_cast<decltype(impl) &&>(impl)));
+      return _::get_field(_::get_leaf<idx>(static_cast<decltype(impl) &&>(impl)));
     }
 
     /// @overload
@@ -118,7 +118,7 @@ namespace kumi
     KUMI_ABI constexpr decltype(auto) operator[](field_name<Name> const&) const &&noexcept
     {
       constexpr auto idx = _::get_name_index<Name, Ts...>();
-      return unwrap_field_value(_::get_leaf<idx>(static_cast<decltype(impl) const &&>(impl)));
+      return _::get_field(_::get_leaf<idx>(static_cast<decltype(impl) const &&>(impl)));
     }
 
     /// @overload
@@ -127,7 +127,7 @@ namespace kumi
     KUMI_ABI constexpr decltype(auto) operator[](field_name<Name> const&) const &noexcept
     {
       constexpr auto idx = _::get_name_index<Name, Ts...>();
-      return unwrap_field_value(_::get_leaf<idx>(impl));
+      return _::get_field(_::get_leaf<idx>(impl));
     }
 
     //==============================================================================================

@@ -95,7 +95,6 @@ namespace kumi::_
   //============================================================================================== 
   template<typename From, typename To> struct is_fieldwise_constructible;
   template<typename From, typename To> struct is_fieldwise_convertible;
-  template<typename From, typename To> struct is_fieldwise_ordered;
   
   template<template<class...> class Box, typename... From, typename... To>
   struct is_fieldwise_convertible<Box<From...>, Box<To...>>
@@ -162,4 +161,81 @@ namespace kumi::_
   {
     { t == u };
   };
+
+  //==============================================================================================
+  // Helper concepts for cast checks
+  //==============================================================================================
+  template<typename From, typename To>
+  struct is_unary_castable 
+  {
+    static constexpr bool value = []<std::size_t...I>(std::index_sequence<I...>)
+    {
+      return ([]<std::size_t J>(std::integral_constant<std::size_t, J>)
+      {
+        return kumi::convertible_to<raw_member_t<J, From>, To>;        
+      }(std::integral_constant<std::size_t, I>{}) && ...);
+    }(std::make_index_sequence<kumi::size_v<From>>{});
+  };
+
+  template<typename From, typename To>
+  struct is_recursively_unary_castable
+  {
+    static constexpr bool value = []<std::size_t...I>(std::index_sequence<I...>)
+    {
+      return([]<std::size_t J>(std::integral_constant<std::size_t, J>)
+      {
+        using f = raw_member_t<J,From>;
+        if constexpr ( is_product_type_v<std::remove_cvref_t<f>> )
+             return is_recursively_unary_castable<f, To>::value;
+        else return kumi::convertible_to<f, To>;
+      }(std::integral_constant<std::size_t, I>{}) && ...); 
+    }(std::make_index_sequence<kumi::size_v<From>>{});
+  };
+
+  template<typename From, typename To>
+  struct is_piecewise_castable
+  {
+    static constexpr bool value = (kumi::size_v<From> == kumi::size_v<To>) &&  
+    []<std::size_t...I>(std::index_sequence<I...>)
+    {
+      return([]<std::size_t J>(std::integral_constant<std::size_t, J>)
+      {
+        return kumi::convertible_to<raw_member_t<J,From>, raw_member_t<J,To>>;
+      }(std::integral_constant<std::size_t, I>{}) && ...);
+    }(std::make_index_sequence<size_v<To>>{});
+  };
+
+  template<typename From, typename To>
+  struct is_recursively_piecewise_castable
+  {
+    static constexpr bool value = (kumi::size_v<From> == kumi::size_v<To>) &&
+    []<std::size_t...I>(std::index_sequence<I...>)
+    {
+      return([]<std::size_t J>(std::integral_constant<std::size_t, J>)
+      {
+        using f = raw_member_t<J,From>;
+        using t = raw_member_t<J,To>;
+        if constexpr ( is_product_type_v<std::remove_cvref_t<f>> 
+                    && is_product_type_v<std::remove_cvref_t<t>>) 
+             return is_piecewise_castable<f, t>::value;
+        else return kumi::convertible_to<f, t>;
+      }(std::integral_constant<std::size_t, I>{}) && ...);
+    }(std::make_index_sequence<size_v<To>>{});
+  };
+ 
+  template<typename From, typename To>
+  concept supports_unary_cast = 
+  is_unary_castable<std::remove_cvref_t<From>, std::remove_cvref_t<To>>::value;
+
+  template<typename From, typename To>
+  concept supports_recursive_unary_cast = 
+  is_recursively_unary_castable<std::remove_cvref_t<From>, std::remove_cvref_t<To>>::value;
+    
+  template<typename From, typename To>
+  concept supports_piecewise_cast = 
+  is_piecewise_castable<std::remove_cvref_t<From>, std::remove_cvref_t<To>>::value;
+
+  template<typename From, typename To>
+  concept supports_recursive_piecewise_cast = 
+  is_recursively_piecewise_castable<std::remove_cvref_t<From>, std::remove_cvref_t<To>>::value;
 }

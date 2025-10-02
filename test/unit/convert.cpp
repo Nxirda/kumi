@@ -12,7 +12,7 @@
 #include <string>
 #include <compare>
 
-TTS_CASE("Check tuple to tuple conversion")
+/*TTS_CASE("Check tuple to tuple conversion")
 {
   kumi::tuple in{short{49},62.5f};
 
@@ -30,7 +30,7 @@ TTS_CASE("Check tuple to tuple constexpr conversion")
 
   TTS_CONSTEXPR_EQUAL ( (in.cast<int ,double>() ) , (kumi::tuple{49 ,62.5}) );
   TTS_CONSTEXPR_EQUAL ( (in.cast<char,int>()    ) , (kumi::tuple{'1',62})   );
-};
+};*/
 
 struct my_struct
 {

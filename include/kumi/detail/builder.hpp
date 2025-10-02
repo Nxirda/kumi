@@ -97,7 +97,17 @@ namespace kumi
       {
         if constexpr ( record_type<T> ) return kumi::record{ KUMI_FWD(args)...};
         else                            return kumi::tuple { KUMI_FWD(args)...};
-      } 
+      }
+
+      template<product_type Names, product_type Values>
+      requires (size_v<Names> == size_v<Values>)
+      static constexpr auto combine(Names && names, Values && values)
+      {
+        return [&]<std::size_t...I>(std::index_sequence<I...>)
+        {
+          return build( (get<I>(names) = get<I>(values))... );
+        }(std::make_index_sequence<size_v<Names>>{});
+      }
     };
 
     template <kumi::product_type T>

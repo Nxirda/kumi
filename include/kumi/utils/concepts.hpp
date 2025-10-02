@@ -238,7 +238,8 @@ namespace kumi
   //! members as `U`, and each of its fields has a corresponding field in `U` with the same name
   //================================================================================================
   template<typename T, typename U>
-  concept equivalent = (size_v<T> == size_v<U>) && _::has_same_field_names_v<T,U>;
+  concept equivalent = (size_v<T> == size_v<U>) && _::has_same_field_names_v<std::remove_cvref_t<T>
+                                                                            ,std::remove_cvref_t<U>>;
 
   //================================================================================================
   //! @ingroup concepts
