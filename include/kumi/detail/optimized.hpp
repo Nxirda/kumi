@@ -9,7 +9,8 @@
 
 #include <cstddef>
 #include <utility>
-#include <kumi/detail/field_capture.hpp>
+
+#include <kumi/detail/meta.hpp>
 
 namespace kumi::_
 {
@@ -18,7 +19,7 @@ namespace kumi::_
   // This shaves a bit of compile time and it makes symbol length of tuple NTTP shorter
   //================================================================================================
 
-  // We usually do'nt want to optimize tuple of references
+  // We usually don't want to optimize tuple of references
   template<typename... Ts>
   inline constexpr bool no_references = (true && ... && !std::is_reference_v<Ts>);
 
@@ -340,13 +341,6 @@ namespace kumi::_
   //================================================================================================
   // Optimized get_leaf<type> for all binders of 1->10 elements
   //================================================================================================
-  template <typename T, typename... Ts>
-  consteval std::size_t index_of_type(){
-    std::size_t idx = 0;
-    [[maybe_unused]] bool b = ((std::same_as<T, Ts> ? true : (++idx, false)) || ...);  
-    return idx;
-  }
-
   template<typename T,typename ISeq, typename... Ts>
   requires (sizeof...(Ts) < 10) && 
   requires(binder<ISeq, Ts...>) { typename binder<ISeq,Ts...>::kumi_specific_layout; }
@@ -387,18 +381,6 @@ namespace kumi::_
   //================================================================================================
   // Optimized get_leaf<name> for all binders of 1->10 elements
   //================================================================================================
-  template <kumi::str Name, typename... Ts>
-  consteval std::size_t index_of_name() {
-    std::size_t idx = 0;
-    [[maybe_unused]] bool found = (([&] {
-      if constexpr (std::same_as<decltype(name_of(as<Ts>{})), kumi::str>) {
-        if (name_of(as<Ts>{}) == Name) return true;
-      } 
-      return (++idx, false);
-    }() || ...));
-    return idx;
-  }
-
   template<kumi::str Name,typename ISeq, typename... Ts>
   requires (sizeof...(Ts) < 10) && 
   requires(binder<ISeq, Ts...>) { typename binder<ISeq,Ts...>::kumi_specific_layout; }

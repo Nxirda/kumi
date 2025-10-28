@@ -7,6 +7,8 @@
 //==================================================================================================
 #pragma once
 
+#include <kumi/detail/meta.hpp>
+
 namespace kumi
 {
   //================================================================================================
@@ -22,9 +24,9 @@ namespace kumi
   //! @include doc/members_of.cpp
   //================================================================================================
   template<product_type T>
-  [[nodiscard]] KUMI_ABI constexpr auto members_of(as<T> ) noexcept
+  [[nodiscard]] KUMI_ABI constexpr auto members_of( as<T> ) noexcept
   {
-    if constexpr( std::is_empty_v<T> ) return tuple{};
+    if constexpr( sized_product_type<T,0> ) return tuple{};
     else return [&]<std::size_t...I>(std::index_sequence<I...>)
     {
       return tuple{ name_of(as<element_t<I,T>>{})... };
@@ -46,12 +48,57 @@ namespace kumi
   template<product_type T>
   [[nodiscard]] KUMI_ABI constexpr auto values_of(T && t) noexcept
   {
-    if constexpr( std::is_empty_v<T> ) return tuple{};
+    if constexpr( sized_product_type<T,0> ) return tuple{};
     else return [&]<std::size_t...I>(std::index_sequence<I...>)
     {
       return tuple{ field_value_of(get<I>(KUMI_FWD(t)))... };
     }(std::make_index_sequence<size_v<T>>{});
   }
+
+  //================================================================================================
+  //! @ingroup algorithm 
+  //! @brief Extracts the values of the fields of a kumi::product_type. 
+  //!
+  //! @tparam   T the type of the product_type from which to extract names.
+  //! @param    t the product_type from which to extract names.
+  //! @return   A tuple of references to the values of a kumi::product_type. 
+  //! @related kumi::record
+  //!
+  //! ## Example:
+  //! @include doc/get_adaptor.cpp
+  //================================================================================================
+  //template<str Name, product_type T>
+  //[[nodiscard]] KUMI_ABI constexpr decltype(auto) get(T && t) noexcept
+  //{
+  //  //constexpr auto names = members_of( as<T>{} );
+  //  constexpr auto idx   = []<std::size_t...I>( std::index_sequence<I...> )
+  //  {
+  //      return _::index_of_name<Name,element_t<I,T>...>();
+  //  }(std::make_index_sequence<size_v<T>>{});
+  //  return get<idx>( values_of(KUMI_FWD(t)) );
+  //}
+
+  //================================================================================================
+  //! @ingroup algorithm 
+  //! @brief Extracts the values of the fields of a kumi::product_type. 
+  //!
+  //! @tparam   T the type of the product_type from which to extract names.
+  //! @param    t the product_type from which to extract names.
+  //! @return   A tuple of references to the values of a kumi::product_type. 
+  //! @related kumi::record
+  //!
+  //! ## Example:
+  //! @include doc/get_adaptor.cpp
+  //================================================================================================
+  //template<typename Target, product_type T>
+  //[[nodiscard]] KUMI_ABI constexpr decltype(auto) get(T && t) noexcept
+  //{
+  //  constexpr auto idx = []<std::size_t...I>( std::index_sequence<I...> )
+  //  {
+  //      return _::index_of_type<Target,element_t<I,T>...>();
+  //  }(std::make_index_sequence<size_v<T>>{});
+  //  return get<idx>( values_of(KUMI_FWD(t)) );
+  //}
 
   namespace result
   {

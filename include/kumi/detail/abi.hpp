@@ -7,12 +7,21 @@
 //==================================================================================================
 #pragma once
 
+#if defined(__clang__)
+#  pragma clang diagnostic ignored "-Wmissing-braces"
+#endif
+
+// Macro to replace std::forward. Better compile-time + less error-prone
+#define KUMI_FWD(...) static_cast<decltype(__VA_ARGS__) &&>(__VA_ARGS__)
+
+// Macro used for kumi to be usable with CUDA
 #if defined(__CUDACC__)
 #define KUMI_CUDA __host__ __device__
 #else
 #define KUMI_CUDA
 #endif
 
+// Main ABI function macro 
 #if defined(KUMI_DEBUG)
 #   define KUMI_ABI
 #elif defined(__GNUC__)

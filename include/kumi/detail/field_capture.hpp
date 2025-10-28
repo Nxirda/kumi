@@ -7,10 +7,6 @@
 //==================================================================================================
 #pragma once
 
-#include <kumi/detail/abi.hpp>
-#include <kumi/detail/str.hpp>
-#include <kumi/detail/unit_type.hpp>
-
 namespace kumi
 {
   //================================================================================================
@@ -23,8 +19,7 @@ namespace kumi
   //! @tparam ID a compile time string that is used to retrieve the field.
   //! @tparam T the type of the value that is wrapped.
   //================================================================================================
-  template<str ID, typename T>
-  struct field_capture
+  template<str ID, typename T> struct field_capture
   {
     /// Underlying type of a field_capture
     using type = T;
@@ -57,40 +52,4 @@ namespace kumi
     template<kumi::str ID, typename T>
     KUMI_ABI constexpr T const &  get_field(field_capture<ID, T> const & a) noexcept { return a.value; }
   }
-
-  //================================================================================================
-  //! @ingroup product_types 
-  //! @brief Extracts the value from a kumi::field_capture or returns the parameter 
-  //!
-  //! @note If the unqualified type of T is not a field_capture returns kumi::none.
-  //! @tparam   T The name to extract name from. 
-  //! @return   The name of the field_capture or kumi::none.
-  //! @related kumi::field_capture
-  //================================================================================================
-  template<typename T>
-  [[nodiscard]] KUMI_ABI constexpr auto name_of( as<T> ) noexcept
-  {
-    using U = std::remove_cvref_t<T>;
-    if constexpr ( requires{U::is_field_capture;} ) return U::name;
-    else                                            return kumi::none;
-  }
-  
-  //================================================================================================
-  //! @ingroup product_types 
-  //! @brief Extracts the value from a kumi::field_capture or returns the parameter 
-  //!
-  //! @note If the unqualified type of T is not a field_capture, simply forwards the parameter
-  //! @tparam   T The type to unwrap 
-  //! @param    t A forwarding reference to the input object.
-  //! @return   A forwarded value of the unwrapped object.
-  //! @related kumi::field_capture
-  //================================================================================================
-  template<typename T>
-  [[nodiscard]] KUMI_ABI constexpr decltype(auto) field_value_of( T && t ) noexcept
-  {
-    using U = std::remove_cvref_t<T>;
-    if constexpr ( requires {U::is_field_capture;} )  return _::get_field(KUMI_FWD(t));
-    else                                              return KUMI_FWD(t);
-  }
-
 }

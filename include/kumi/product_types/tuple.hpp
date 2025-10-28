@@ -8,11 +8,7 @@
 #ifndef KUMI_TUPLE_HPP_INCLUDED
 #define KUMI_TUPLE_HPP_INCLUDED
 
-#include <kumi/detail/concepts.hpp>
-#include <kumi/detail/abi.hpp>
-#include <kumi/detail/stdfix.hpp>
-#include <kumi/detail/binder.hpp>
-#include <kumi/detail/field_capture.hpp>
+#include <kumi/detail.hpp>
 #include <kumi/utils.hpp>
 
 #include <iosfwd>
@@ -381,9 +377,11 @@ namespace kumi
                                                          tuple const &t) noexcept
     {
       os << "( ";
-      kumi::for_each([&os](auto const &e) { os << e << " "; }, t);
-      os << ")";
-
+      [&]<std::size_t...I>( std::index_sequence<I...> )
+      {
+        ((os << t[index<I>] << " "), ...);
+      }(std::make_index_sequence<size_v<decltype(t)>>{});
+      os << ')';
       return os;
     }
   };

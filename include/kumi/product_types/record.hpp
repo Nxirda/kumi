@@ -8,7 +8,8 @@
 #ifndef KUMI_RECORD_HPP_INCLUDED
 #define KUMI_RECORD_HPP_INCLUDED
 
-#include <kumi/product_types/tuple.hpp>
+#include <kumi/detail.hpp>
+#include <kumi/utils.hpp>
 
 namespace kumi
 {
@@ -26,7 +27,7 @@ namespace kumi
   //! @tparam Ts Sequence of fields stored inside kumi::record.
   //================================================================================================
   template<typename... Ts>
-  requires (( entirely_uniquely_named<Ts...> ))
+  requires ( entirely_uniquely_named<Ts...> )
   struct record<Ts...>
   {
     using is_product_type   = void;
@@ -145,7 +146,7 @@ namespace kumi
         return tuple{ name_of(as<Ts>{})... };
     };
 
-    /// Returns references to the values of the element in a kumi::record
+    ///// Returns references to the values of the element in a kumi::record
     [[nodiscard]] KUMI_ABI constexpr auto values() noexcept
     {
         return [&]<std::size_t...I>(std::index_sequence<I...>)
@@ -154,7 +155,7 @@ namespace kumi
         }(std::make_index_sequence<sizeof...(Ts)>{});
     };
 
-    /// @overload
+    ///// @overload
     [[nodiscard]] KUMI_ABI constexpr auto values() const noexcept
     {
         return [&]<std::size_t...I>(std::index_sequence<I...>)
@@ -225,12 +226,11 @@ namespace kumi
                                                          record const &t) noexcept
     {
       os << "( ";
-      kumi::for_each([&os](auto name, auto const &e)
+      [&]<std::size_t...I>( std::index_sequence<I...> )
       {
-        os << name << " : " << e << " ";
-      }, t.names(), t.values());
-      os << ")";
-
+        ((os << t[index<I>] << " "), ...);
+      }(std::make_index_sequence<size_v<decltype(t)>>{});
+      os << ')';
       return os;
     }
   };
@@ -354,7 +354,8 @@ namespace kumi
   {
     return _::apply_field( [](auto&&... elems)
               {
-                return kumi::forward_as_record<name_of(as<decltype(elems)>{})...>(field_value_of(KUMI_FWD(elems))...);
+                return kumi::forward_as_record< name_of(as(elems))... >
+                      (field_value_of(KUMI_FWD(elems))...);
               }
             , KUMI_FWD(r)
             );
