@@ -7,10 +7,7 @@
 //==================================================================================================
 #pragma once
 
-#include <kumi/detail/abi.hpp>
-#include <kumi/detail/str.hpp>
-#include <kumi/detail/unit_type.hpp>
-#include <kumi/detail/streamable.hpp>
+#include <kumi/utils/as.hpp>
 
 namespace kumi
 {

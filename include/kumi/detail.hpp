@@ -25,9 +25,18 @@ namespace kumi
   //================================================================================================
 }
 
-#include <kumi/utils/as.hpp>
-#include <kumi/utils/ct_helpers.hpp>
-#include <kumi/utils/concepts.hpp>
-#include <kumi/utils/std.hpp>
-#include <kumi/utils/monoid.hpp>
-#include <kumi/detail/builder.hpp>
+#include <kumi/detail/abi.hpp>
+#include <kumi/detail/streamable.hpp>
+
+// Types
+#include <kumi/detail/unit_type.hpp>
+#include <kumi/detail/str.hpp>
+#include <kumi/detail/field_capture.hpp>
+
+// Functionnalities
+#include <kumi/detail/binder.hpp>
+#include <kumi/detail/optimized.hpp>
+#include <kumi/detail/concepts.hpp>
+#include <kumi/detail/indexes.hpp>
+#include <kumi/detail/stdfix.hpp>
+#include <kumi/detail/unique.hpp>

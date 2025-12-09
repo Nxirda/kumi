@@ -8,12 +8,14 @@
 #ifndef KUMI_TUPLE_HPP_INCLUDED
 #define KUMI_TUPLE_HPP_INCLUDED
 
-#include <kumi/detail/concepts.hpp>
-#include <kumi/detail/abi.hpp>
-#include <kumi/detail/stdfix.hpp>
-#include <kumi/detail/binder.hpp>
-#include <kumi/detail/field_capture.hpp>
-#include <kumi/detail/streamable.hpp>
+//#include <kumi/detail/concepts.hpp>
+//#include <kumi/detail/abi.hpp>
+//#include <kumi/detail/stdfix.hpp>
+//#include <kumi/detail/binder.hpp>
+//#include <kumi/detail/field_capture.hpp>
+//#include <kumi/detail/streamable.hpp>
+//#include <kumi/utils.hpp>
+#include <kumi/detail.hpp>
 #include <kumi/utils.hpp>
 
 #include <iosfwd>
@@ -205,15 +207,15 @@ namespace kumi
     //! @brief  Converts a tuple<Ts...> to a tuple<Us...>.
     //! @tparam Us Types composing the destination tuple
     //==============================================================================================
-    template<typename... Us>
-    requires(   _::piecewise_convertible<tuple, tuple<Us...>>
-            &&  (sizeof...(Us) == sizeof...(Ts))
-            &&  (!std::same_as<Ts, Us> && ...)
-            )
-    [[deprecated("Will be replaced by free functions")]][[nodiscard]] inline constexpr auto cast() const
-    {
-      return apply([](auto &&...elems) { return tuple<Us...> {static_cast<Us>(elems)...}; }, *this);
-    }
+    //template<typename... Us>
+    //requires(   _::piecewise_convertible<tuple, tuple<Us...>>
+    //        &&  (sizeof...(Us) == sizeof...(Ts))
+    //        &&  (!std::same_as<Ts, Us> && ...)
+    //        )
+    //[[deprecated("Will be replaced by free functions")]][[nodiscard]] inline constexpr auto cast() const
+    //{
+    //  return apply([](auto &&...elems) { return tuple<Us...> {static_cast<Us>(elems)...}; }, *this);
+    //}
 
     //==============================================================================================
     //! @}
@@ -340,37 +342,37 @@ namespace kumi
     //! @return The value returned by f.
     //!
     //==============================================================================================
-    template<typename Function>
-    [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) const&
-    noexcept(noexcept(kumi::apply(KUMI_FWD(f), *this)))
-    -> decltype(kumi::apply(KUMI_FWD(f), *this))
-    { return kumi::apply(KUMI_FWD(f), *this); }
+   // template<typename Function>
+   // [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) const&
+   // noexcept(noexcept(kumi::apply(KUMI_FWD(f), *this)))
+   // -> decltype(kumi::apply(KUMI_FWD(f), *this))
+   // { return kumi::apply(KUMI_FWD(f), *this); }
 
-#if !defined(KUMI_DOXYGEN_INVOKED)
-    template<typename Function>
-    [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) &
-    noexcept(noexcept(kumi::apply(KUMI_FWD(f), *this)))
-    -> decltype(kumi::apply(KUMI_FWD(f), *this))
-    {
-      return kumi::apply(KUMI_FWD(f), *this);
-    }
+   // #if !defined(KUMI_DOXYGEN_INVOKED)
+   // template<typename Function>
+   // [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) &
+   // noexcept(noexcept(kumi::apply(KUMI_FWD(f), *this)))
+   // -> decltype(kumi::apply(KUMI_FWD(f), *this))
+   // {
+   //   return kumi::apply(KUMI_FWD(f), *this);
+   // }
 
-    template<typename Function>
-    [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) const &&noexcept(
-    noexcept(kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this))))
-    -> decltype(kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this)))
-    {
-      return kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this));
-    }
+   // template<typename Function>
+   // [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) const &&noexcept(
+   // noexcept(kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this))))
+   // -> decltype(kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this)))
+   // {
+   //   return kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this));
+   // }
 
-    template<typename Function>
-    [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) &&noexcept(
-    noexcept(kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this))))
-    -> decltype(kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this)))
-    {
-      return kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this));
-    }
-#endif
+   // template<typename Function>
+   // [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) &&noexcept(
+   // noexcept(kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this))))
+   // -> decltype(kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this)))
+   // {
+   //   return kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this));
+   // }
+   // #endif
 
     //==============================================================================================
     /// @ingroup tuple
@@ -500,15 +502,19 @@ namespace kumi
   //! ## Example:
   //! @include doc/to_ref.cpp
   //================================================================================================
-  template<product_type Type>
-  [[nodiscard]] KUMI_ABI constexpr auto to_ref(Type && t)
+  template<product_type T>
+  [[nodiscard]] KUMI_ABI constexpr auto to_ref(T && t)
   {
-    return apply( [](auto&&... elems)
-                  {
-                    return kumi::forward_as_tuple(KUMI_FWD(elems)...);
-                  }
-                , KUMI_FWD(t)
-                );
+    return [&]<std::size_t...I>(std::index_sequence<I...>)
+    {
+      return kumi::forward_as_tuple( get<I>(KUMI_FWD(t))... );
+    }(std::make_index_sequence<size_v<T>>{});
+    //return apply( [](auto&&... elems)
+    //              {
+    //                return kumi::forward_as_tuple(KUMI_FWD(elems)...);
+    //              }
+    //            , KUMI_FWD(t)
+    //            );
   }
 
   //================================================================================================
@@ -563,7 +569,7 @@ namespace kumi
   {
     return static_cast<tuple<Ts...> const &&>(arg)[index<I>];
   }
-  
+
   /// Improves diagnostic for out of bounds index
   template<std::integral auto I, product_type T> 
   requires ((!record_type<T>) && ((I >= size_v<T>) || (I < 0))) 
@@ -620,7 +626,7 @@ namespace kumi
   /// Improves diagnostic for non present name
   template<str Name, product_type T> 
   requires (!record_type<T> && !(_::named_get_compliant<Name, T>()))
-  constexpr auto get(T && t) = delete;
+  KUMI_ABI constexpr auto get(T && t) = delete;
 
   //================================================================================================
   //! @ingroup tuple
@@ -678,6 +684,32 @@ namespace kumi
   //================================================================================================
   //! @}
   //================================================================================================
+  
+  template<product_type T> requires (!record_type<T>)
+  struct kumi::_::builder<T>
+  {
+    using type = T;
+
+    template<typename... Us> using to = kumi::tuple<Us...>;
+    
+    template<typename... Args>
+    static constexpr auto make(Args&&... args)
+    {
+      return kumi::make_tuple( KUMI_FWD(args)...);
+    } 
+    
+    template<typename... Args>
+    static constexpr auto build(Args&&... args)
+    {
+      return kumi::tuple{ KUMI_FWD(args)...};
+    } 
+  };
+
+  template<product_type... Ts> requires ( !record_type<Ts> && ...)
+  struct common_product_type<Ts...>
+  {
+    using type = kumi::tuple<>;
+  };
 }
 
 #endif

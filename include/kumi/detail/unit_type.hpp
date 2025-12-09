@@ -8,7 +8,7 @@
 #pragma once
 
 #include <iosfwd>
-#include <kumi/detail/abi.hpp>
+#include <utility>
 
 namespace kumi
 {
