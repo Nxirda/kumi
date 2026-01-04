@@ -68,13 +68,13 @@ namespace kumi
   //! ## Example
   //! @include doc/from_tuple.cpp
   //================================================================================================
-  template<typename Type, typename... Ts>
-  requires(!product_type<Type> && _::implicit_constructible<Type, Ts...>)
-  [[nodiscard]] KUMI_ABI constexpr auto from_tuple(tuple<Ts...> const &t)
-  {
-    return [&]<std::size_t... I>(std::index_sequence<I...>) { return Type {get<I>(t)...}; }
-    (std::make_index_sequence<sizeof...(Ts)>());
-  }
+  //template<typename Type, typename... Ts>
+  //requires(!product_type<Type> && _::implicit_constructible<Type, Ts...>)
+  //[[nodiscard]] KUMI_ABI constexpr auto from_tuple(tuple<Ts...> const &t)
+  //{
+  //  return [&]<std::size_t... I>(std::index_sequence<I...>) { return Type {get<I>(t)...}; }
+  //  (std::make_index_sequence<sizeof...(Ts)>());
+  //}
 
   //================================================================================================
   //! @ingroup utility
@@ -89,15 +89,15 @@ namespace kumi
   //! ## Example
   //! @include doc/record/from_record.cpp
   //================================================================================================
-  template<record_type Type, typename... Ts>
-  requires ( equivalent<Type, record<Ts...>> )
-  [[nodiscard]] KUMI_ABI constexpr auto from_record(record<Ts...> const &r)
-  {
-    return [&]<std::size_t... I>(std::index_sequence<I...>) 
-    { 
-      return Type{ get<name_of(as<element_t<I,Type>>{})>(r)... };
-    }(std::make_index_sequence<size_v<Type>>());
-  }
+  //template<record_type Type, typename... Ts>
+  //requires ( equivalent<Type, record<Ts...>> )
+  //[[nodiscard]] KUMI_ABI constexpr auto from_record(record<Ts...> const &r)
+  //{
+  //  return [&]<std::size_t... I>(std::index_sequence<I...>) 
+  //  { 
+  //    return Type{ get<name_of(as<element_t<I,Type>>{})>(r)... };
+  //  }(std::make_index_sequence<size_v<Type>>());
+  //}
 
   //================================================================================================
   //! @ingroup utility
@@ -113,11 +113,11 @@ namespace kumi
   //! ## Example
   //! @include doc/to_tuple.cpp
   //================================================================================================
-  template<product_type Type>
-  [[nodiscard]] KUMI_ABI constexpr auto to_tuple(Type && t)
-  {
-    return apply([](auto &&...elems) { return tuple{elems...}; }, KUMI_FWD(t));
-  }
+  //template<product_type Type>
+  //[[nodiscard]] KUMI_ABI constexpr auto to_tuple(Type && t)
+  //{
+  //  return apply([](auto &&...elems) { return tuple{elems...}; }, KUMI_FWD(t));
+  //}
 
   template<_::static_span S>
   [[nodiscard]] KUMI_ABI constexpr auto to_tuple( S && s )
@@ -142,16 +142,16 @@ namespace kumi
   //! ## Example
   //! @include doc/record/to_record.cpp
   //================================================================================================
-  template<record_type Type>
-  [[nodiscard]] KUMI_ABI constexpr auto to_record(Type && r)
-  {
-    if constexpr ( sized_product_type<Type, 0> ) return kumi::record{};
-    else return [&]<std::size_t...I>(std::index_sequence<I...>)
-    {
-      return record{field<name_of(as<element_t<I,Type>>{})> = 
-                      get<name_of(as<element_t<I,Type>>{})>(KUMI_FWD(r))... };
-    }(std::make_index_sequence<size_v<Type>>{});
-  }
+  //template<record_type Type>
+  //[[nodiscard]] KUMI_ABI constexpr auto to_record(Type && r)
+  //{
+  //  if constexpr ( sized_product_type<Type, 0> ) return kumi::record{};
+  //  else return [&]<std::size_t...I>(std::index_sequence<I...>)
+  //  {
+  //    return record{field<name_of(as<element_t<I,Type>>{})> = 
+  //                    get<name_of(as<element_t<I,Type>>{})>(KUMI_FWD(r))... };
+  //  }(std::make_index_sequence<size_v<Type>>{});
+  //}
 
   //================================================================================================
   //! @ingroup utility

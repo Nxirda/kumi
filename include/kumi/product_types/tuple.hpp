@@ -8,13 +8,6 @@
 #ifndef KUMI_TUPLE_HPP_INCLUDED
 #define KUMI_TUPLE_HPP_INCLUDED
 
-//#include <kumi/detail/concepts.hpp>
-//#include <kumi/detail/abi.hpp>
-//#include <kumi/detail/stdfix.hpp>
-//#include <kumi/detail/binder.hpp>
-//#include <kumi/detail/field_capture.hpp>
-//#include <kumi/detail/streamable.hpp>
-//#include <kumi/utils.hpp>
 #include <kumi/detail.hpp>
 #include <kumi/utils.hpp>
 
@@ -520,7 +513,30 @@ namespace kumi
   //================================================================================================
   //! @}
   //================================================================================================
+  
+  //==============================================================================================
+  //! @name Tuple Conversions
+  //! @{
+  //==============================================================================================
 
+  template<typename Type, typename... Ts>
+  requires(!product_type<Type> && _::implicit_constructible<Type, Ts...>)
+  [[nodiscard]] KUMI_ABI constexpr auto from_tuple(tuple<Ts...> const &t)
+  {
+    return [&]<std::size_t... I>(std::index_sequence<I...>) { return Type {get<I>(t)...}; }
+    (std::make_index_sequence<sizeof...(Ts)>());
+  }
+    
+  template<product_type Type>
+  [[nodiscard]] KUMI_ABI constexpr auto to_tuple(Type && t)
+  {
+    return apply([](auto &&...elems) { return tuple{elems...}; }, KUMI_FWD(t));
+  }
+
+  //================================================================================================
+  //! @}
+  //================================================================================================
+  
   //================================================================================================
   //! @name Accessors
   //! @{
@@ -684,27 +700,31 @@ namespace kumi
   //================================================================================================
   //! @}
   //================================================================================================
-  
-  template<product_type T> requires (!record_type<T>)
-  struct kumi::_::builder<T>
+ 
+  namespace _
   {
-    using type = T;
-
-    template<typename... Us> using to = kumi::tuple<Us...>;
-    
-    template<typename... Args>
-    static constexpr auto make(Args&&... args)
+    template<product_type T> requires (!record_type<T>) struct builder<T>
     {
-      return kumi::make_tuple( KUMI_FWD(args)...);
-    } 
-    
-    template<typename... Args>
-    static constexpr auto build(Args&&... args)
-    {
-      return kumi::tuple{ KUMI_FWD(args)...};
-    } 
-  };
+      using type = T;
 
+      template<typename... Us> using to = kumi::tuple<Us...>;
+      
+      template<typename... Args>
+      static constexpr auto make(Args&&... args)
+      {
+        return kumi::make_tuple( KUMI_FWD(args)...);
+      } 
+      
+      template<typename... Args>
+      static constexpr auto build(Args&&... args)
+      {
+        return kumi::tuple{ KUMI_FWD(args)...};
+      } 
+    };
+  }
+  
+  // As we are lacking a proper mechanism to find the least restrictive subtype, we fallback to 
+  // a specializable trait
   template<product_type... Ts> requires ( !record_type<Ts> && ...)
   struct common_product_type<Ts...>
   {

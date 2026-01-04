@@ -30,4 +30,3 @@ namespace kumi
 #include <kumi/utils/concepts.hpp>
 #include <kumi/utils/std.hpp>
 #include <kumi/utils/monoid.hpp>
-#include <kumi/detail/builder.hpp>

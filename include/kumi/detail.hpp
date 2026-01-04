@@ -35,6 +35,7 @@ namespace kumi
 
 // Functionnalities
 #include <kumi/detail/binder.hpp>
+#include <kumi/detail/builder.hpp>
 #include <kumi/detail/optimized.hpp>
 #include <kumi/detail/concepts.hpp>
 #include <kumi/detail/indexes.hpp>

@@ -40,7 +40,7 @@ namespace kumi
   //! A `kumi::record_type` also models `kumi::product_type`
   //================================================================================================
   template<typename T>
-  concept record_type = product_type<T> && is_record_type<std::remove_cvref_t<T>>::value;
+  concept record_type = is_record_type<std::remove_cvref_t<T>>::value && product_type<T>;
 
   //================================================================================================
   //! @ingroup concepts
@@ -312,7 +312,7 @@ namespace kumi
   //!       may yield different results. (Ie : the monoid is not necessarily abelian)
   //================================================================================================
   template<typename T>
-  concept monoid = []()
+  concept monoid = []
   {
     using M = std::remove_cvref_t<T>;
     return requires(M m) {

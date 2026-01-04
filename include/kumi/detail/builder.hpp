@@ -12,7 +12,9 @@ namespace kumi
   //================================================================================================
   //! @ingroup traits 
   //! @brief   Extracts the common product_type of a parameter pack, if all the types are `record`
-  //!          then it returns an empty record, otherwise returns an empty `kumi::tuple`
+  //!          then it returns an empty record, otherwise returns an empty `kumi::tuple`. As we 
+  //!          are unable to compute the Least Restrictive Subtypes of a pack, this trait should 
+  //!          be specialized for each case one would want to write.
   //!
   //! @tparam Ts The `product_types` to access
   //!
@@ -34,8 +36,8 @@ namespace kumi
     //================================================================================================
     //! @ingroup tuple
     //! @class builder 
-    //! @brief Helper structure to build the correct output `product_type`. If the provided Tuple
-    //!        is a not a record_type the builder will output a tuple otherwise a record. 
+    //! @brief Helper structure to build the correct output `product_type`. If the provided Product
+    //!        type is a not a record_type the builder will output a tuple otherwise a record. 
     //!
     //! builder provides a generic way of defining a kumi::product_type which depending on the 
     //! given semantic (product_type or record_type) will output respectively a kumi::tuple or a 
