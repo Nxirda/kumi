@@ -38,13 +38,15 @@ namespace kumi::_
   template<template<class...> class Box, typename... From, typename... To>
   struct is_piecewise_convertible<Box<From...>, Box<To...>>
   {
-    static constexpr bool value = (... && kumi::convertible_to<From, To>);
+    static constexpr bool value = (sizeof...(From) == sizeof...(To))
+      && (... && kumi::convertible_to<From, To>);
   };
 
   template<template<class...> class Box, typename... From, typename... To>
   struct is_piecewise_constructible<Box<From...>, Box<To...>>
   {
-    static constexpr bool value = (... && std::is_constructible_v<To, From>);
+    static constexpr bool value = (sizeof...(From) == sizeof...(To)) 
+      && (... && std::is_constructible_v<To, From>);
   };
 
   template<typename From, typename To>
