@@ -380,7 +380,7 @@ namespace kumi::_
   // Optimized get_leaf<name> for all binders of 1->10 elements
   //================================================================================================
   template<kumi::str Name,typename ISeq, typename... Ts>
-  requires (sizeof...(Ts) <= 10) && can_get_field_by_name<value_as<Name>, Ts...> && 
+  requires (sizeof...(Ts) <= 10) && ( contains_field<Name, Ts...>()) && 
   requires(binder<ISeq, Ts...>) { typename binder<ISeq,Ts...>::kumi_specific_layout; }
   KUMI_ABI constexpr auto &get_leaf(binder<ISeq, Ts...> &arg) noexcept
   {
@@ -398,7 +398,7 @@ namespace kumi::_
   }
 
   template<kumi::str Name,typename ISeq, typename... Ts>
-  requires (sizeof...(Ts) <= 10) && can_get_field_by_name<value_as<Name>, Ts...> && 
+  requires (sizeof...(Ts) <= 10) && ( contains_field<Name, Ts...>()) && 
   requires(binder<ISeq, Ts...>) { typename binder<ISeq, Ts...>::kumi_specific_layout; }
   KUMI_ABI constexpr auto &&get_leaf(binder<ISeq, Ts...> &&arg) noexcept
   {
@@ -416,7 +416,7 @@ namespace kumi::_
   }
 
   template<kumi::str Name,typename ISeq, typename... Ts>
-  requires (sizeof...(Ts) <= 10) && can_get_field_by_name<value_as<Name>, Ts...> && 
+  requires (sizeof...(Ts) <= 10) && ( contains_field<Name, Ts...>()) && 
   requires(binder<ISeq, Ts...>) { typename binder<ISeq,Ts...>::kumi_specific_layout; }
   KUMI_ABI constexpr auto const &&get_leaf(binder<ISeq, Ts...> const &&arg) noexcept
   {
@@ -434,7 +434,7 @@ namespace kumi::_
   }
 
   template<kumi::str Name,typename ISeq, typename... Ts>
-  requires (sizeof...(Ts) <= 10) && can_get_field_by_name<value_as<Name>, Ts...> && 
+  requires (sizeof...(Ts) <= 10) && ( contains_field<Name, Ts...>()) && 
   requires(binder<ISeq, Ts...>) { typename binder<ISeq, Ts...>::kumi_specific_layout; }
   KUMI_ABI constexpr auto const &get_leaf(binder<ISeq, Ts...> const &arg) noexcept
   {

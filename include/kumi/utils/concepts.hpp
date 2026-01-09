@@ -152,17 +152,6 @@ namespace kumi
               && ...);  
       }(std::make_index_sequence<size_v<T>>{});
     }
-
-    // MSVC workaround for get<>
-    // MSVC doesnt SFINAE properly based on NTTP types before requires evaluation
-    // so we need this weird mechanism for it to pick the correct version.
-    template<auto Name, typename... Ts> 
-    KUMI_ABI constexpr auto contains_field()
-    {
-      if constexpr( !indexer<std::remove_cvref_t<decltype(Name)>> )
-        return can_get_field_by_name<value_as<Name>, Ts...>;
-      else return false;
-    };
   }
 
   //================================================================================================

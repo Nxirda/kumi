@@ -154,6 +154,16 @@ namespace kumi::_
   template<typename Ref, typename... Fields>
   concept can_get_field_by_name = !std::is_same_v<get_field_by_name_t<Ref, Fields...>, bottom>;
 
+  // MSVC workaround for get<>
+  // MSVC doesnt SFINAE properly based on NTTP types before requires evaluation
+  // so we need this weird mechanism for it to pick the correct version.
+  template<auto Name, typename... Ts> 
+  KUMI_ABI constexpr auto contains_field()
+  {
+    if constexpr( !std::integral<std::remove_cvref_t<decltype(Name)>> )
+      return can_get_field_by_name<value_as<Name>, Ts...>;
+    else return false;
+  };
   //==============================================================================================
   // Helper concepts for construction checks on records
   //============================================================================================== 
