@@ -43,7 +43,7 @@ namespace kumi
   //! @include doc/map.cpp
   //================================================================================================
   template<product_type Tuple, typename Function, sized_product_type<size_v<Tuple>>... Tuples>
-  [[nodiscard]] KUMI_ABI constexpr auto map(Function f, Tuple  &&t0, Tuples &&...others) 
+  [[nodiscard]] KUMI_ABI constexpr auto map(Function && f, Tuple  &&t0, Tuples &&...others) 
   requires ( compatible_product_types<Tuple, Tuples...> && 
            _::supports_call<Function, Tuple&&, Tuples&&...> )
   {
@@ -55,9 +55,9 @@ namespace kumi
         if constexpr ( record_type<Tuple> )
         {
           constexpr auto field = name_of( as<element_t<N,Tuple>>{} );
-          return field_name<field>{} = f(get<field>(args)...);
+          return field_name<field>{} = invoke(KUMI_FWD(f), get<field>(args)...);
         }
-        else return f(get<N>(KUMI_FWD(args))...);
+        else return invoke(KUMI_FWD(f), get<N>(KUMI_FWD(args))...);
       };
 
       return [&]<std::size_t... I>(std::index_sequence<I...>)

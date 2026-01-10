@@ -7,7 +7,6 @@
 //==================================================================================================
 #pragma once
 
-#include <kumi/utils/pp_helpers.hpp>
 #include <kumi/detail/builder.hpp>
 
 namespace kumi
@@ -61,10 +60,11 @@ namespace kumi
   [[nodiscard]] KUMI_ABI constexpr auto cartesian_product( Ts &&... ts )
   requires ( follows_same_semantic<Ts...> )
   {
-    using res_type = result::common_product_type_t<std::remove_cvref_t<Ts>...>;
     if constexpr (sizeof...(Ts)==0) return tuple{};
     else
     {
+      using res_type = common_product_type_t<std::remove_cvref_t<Ts>...>;
+      // Do this with only one array, offset is trivial, instanciating types is meh
       constexpr auto idx = [&]<std::size_t... I>(std::index_sequence<I...>)
       {
         kumi::_::digits<sizeof...(Ts),kumi::size_v<Ts>...> dgt{};

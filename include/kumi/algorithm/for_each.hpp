@@ -29,7 +29,7 @@ namespace kumi
   //! @include doc/record/for_each.cpp
   //================================================================================================
   template<typename Function, product_type Tuple, product_type... Tuples>
-  KUMI_ABI constexpr void for_each(Function f, Tuple&& t, Tuples&&... ts)
+  KUMI_ABI constexpr void for_each(Function && f, Tuple&& t, Tuples&&... ts)
   requires( (compatible_product_types<Tuple, Tuples...>) 
           && (_::supports_call<Function&, Tuple, Tuples...>))
   {
@@ -42,7 +42,8 @@ namespace kumi
         [[maybe_unused]] auto call = [&]<typename M>(M)
                                         { 
                                           constexpr auto field = get<M::value>(fields); 
-                                          f ( get<field>(KUMI_FWD(t))
+                                          kumi::invoke(KUMI_FWD(f)
+                                            ,  get<field>(KUMI_FWD(t))
                                             , get<field>(KUMI_FWD(ts))...
                                           );
                                         };
@@ -56,9 +57,10 @@ namespace kumi
       [&]<std::size_t... I>(std::index_sequence<I...>)
       {
         [[maybe_unused]] auto call = [&]<typename M>(M)
-                                        { f ( get<M::value>(KUMI_FWD(t))
+                                        { kumi::invoke(KUMI_FWD(f)
+                                            , get<M::value>(KUMI_FWD(t))
                                             , get<M::value>(KUMI_FWD(ts))...
-                                            );
+                                          );
                                         };
 
         ( call(std::integral_constant<std::size_t, I>{}), ... );
@@ -86,18 +88,17 @@ namespace kumi
   //================================================================================================
   template<typename Function, product_type Tuple, product_type... Tuples>
   requires( !record_type<Tuple> && (!record_type<Tuples> && ...) )
-  KUMI_ABI constexpr void for_each_index(Function f, Tuple&& t, Tuples&&... ts)
+  KUMI_ABI constexpr void for_each_index(Function && f, Tuple&& t, Tuples&&... ts)
   {
     if constexpr(sized_product_type<Tuple,0>) return;
     else
     {
-      auto const invoker{[&, f](auto const i)
+      auto const invoker{[&](auto const i)
       {
-          f
-          (
-            i,
-            get<i.value>(KUMI_FWD(t)),
-            get<i.value>(KUMI_FWD(ts))...
+        kumi::invoke(KUMI_FWD(f)
+            , i
+            , get<i.value>(KUMI_FWD(t))
+            , get<i.value>(KUMI_FWD(ts))...
           );
       }};
 
@@ -126,7 +127,7 @@ namespace kumi
   //================================================================================================
   template<typename Function, record_type Tuple, record_type... Tuples>
   requires ( compatible_product_types<std::remove_cvref_t<Tuple>, std::remove_cvref_t<Tuples>...> )
-  KUMI_ABI constexpr void for_each_field(Function f, Tuple&& t, Tuples&&... ts)
+  KUMI_ABI constexpr void for_each_field(Function && f, Tuple&& t, Tuples&&... ts)
   {
     if constexpr(sized_product_type<Tuple,0>) return;
     else
@@ -135,11 +136,10 @@ namespace kumi
       auto const invoker = [&]<std::size_t I>(std::integral_constant<std::size_t, I>)
       {
           constexpr auto field = get<I>(fields);
-          f
-          (
-            field,
-            get<field>(KUMI_FWD(t)),
-            get<field>(KUMI_FWD(ts))...
+          kumi::invoke(KUMI_FWD(f)
+            , field
+            , get<field>(KUMI_FWD(t))
+            , get<field>(KUMI_FWD(ts))...
           );
       };
 

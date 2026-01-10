@@ -26,7 +26,7 @@ namespace kumi
   //! @tparam Ts Sequence of fields stored inside kumi::record.
   //================================================================================================
   template<typename... Ts>
-  requires (( entirely_uniquely_named<Ts...> ))
+  requires ( entirely_uniquely_named<Ts...> )
   struct record<Ts...>
   {
     using is_record_type    = void;
@@ -172,7 +172,7 @@ namespace kumi
     //! @return `*this`
     //==============================================================================================
     template<typename... Us>
-    requires( equivalent<record, record<Us...>>  && _::fieldwise_convertible<record, record<Us...>> )
+    requires( equivalent<record, record<Us...>> && _::fieldwise_convertible<record, record<Us...>> )
     KUMI_ABI constexpr record &operator=(record<Us...> const &other)
     {
       ((get<name_of(as<Ts>{})>(*this) = get<name_of(as<Ts>{})>(KUMI_FWD(other))), ...);
@@ -355,15 +355,14 @@ namespace kumi
   //! ## Example:
   //! @include doc/record/to_ref.cpp
   //================================================================================================
-  template<record_type Type>
-  [[nodiscard]] KUMI_ABI constexpr auto to_ref(Type && r)
+  template<record_type R>
+  [[nodiscard]] KUMI_ABI constexpr auto to_ref(R && r)
   {
-    return _::apply_field( [](auto&&... elems)
-              {
-                return kumi::forward_as_record<name_of(as<decltype(elems)>{})...>(field_value_of(KUMI_FWD(elems))...);
-              }
-            , KUMI_FWD(r)
-            );
+    return [&]<std::size_t...I>(std::index_sequence<I...>)
+    {
+      return kumi::forward_as_record<name_of(as<element_t<I,R>>{})...>
+                             ( field_value_of(get<I>(KUMI_FWD(r)))... );
+    }(std::make_index_sequence<size_v<R>>{});
   }
 
   //================================================================================================
@@ -491,6 +490,33 @@ namespace kumi
   //================================================================================================
   //! @}
   //================================================================================================
+ 
+  namespace _ 
+  {
+    template<record_type R> struct builder<R>
+    {
+      using type = R; 
+
+      template<typename... Us> using to = kumi::record<Us...>;
+
+      template<typename... Args>
+      static constexpr auto make(Args&&... args) noexcept
+      {
+        return kumi::make_record( KUMI_FWD(args)...);
+      } 
+
+      template<typename... Args>
+      static constexpr auto build(Args&&... args) noexcept
+      {
+        return kumi::record{ KUMI_FWD(args)...};
+      } 
+    };
+  }
+
+  template<record_type... Ts> struct common_product_type<Ts...>
+  {
+    using type = kumi::record<>;
+  };
 }
 
 #endif

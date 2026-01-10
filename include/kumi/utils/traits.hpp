@@ -299,10 +299,10 @@ namespace kumi
     struct all_uniques_inner : _::unique<Ints, Ts>... {};
 
     template <typename... Us>
-    static auto is_set(Us...) -> decltype(_::true_fn(static_cast<Us>(all_uniques_inner())...));
-    static std::false_type is_set(...);
+    static consteval auto is_set(Us...) -> decltype(_::true_fn(static_cast<Us>(all_uniques_inner())...));
+    static consteval std::false_type is_set(...);
 
-    using type = decltype(is_set(as<Ts>{}...));
+    using type = decltype(is_set(std::type_identity<Ts>{}...));
   };
 
   template<typename... Ts>
@@ -348,10 +348,10 @@ namespace kumi
     struct all_uniques_inner : _::unique_name<Ints, Ts>... {};
 
     template <typename... Us>
-    static auto is_set(Us...) -> decltype(_::true_fn(static_cast<Us>(all_uniques_inner())...));
-    static std::false_type is_set(...);
+    static consteval auto is_set(Us...) -> decltype(_::true_fn(static_cast<Us>(all_uniques_inner())...));
+    static consteval std::false_type is_set(...);
 
-    using type = decltype(is_set(_::make_value_as<Ints, Ts>()...));
+    using type = decltype(is_set(_::get_name<Ints,Ts>()...));
   };
 
   template<typename... Ts>

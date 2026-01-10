@@ -8,12 +8,7 @@
 #ifndef KUMI_TUPLE_HPP_INCLUDED
 #define KUMI_TUPLE_HPP_INCLUDED
 
-#include <kumi/detail/concepts.hpp>
-#include <kumi/detail/abi.hpp>
-#include <kumi/detail/stdfix.hpp>
-#include <kumi/detail/binder.hpp>
-#include <kumi/detail/field_capture.hpp>
-#include <kumi/detail/streamable.hpp>
+#include <kumi/detail.hpp>
 #include <kumi/utils.hpp>
 
 #include <iosfwd>
@@ -246,7 +241,7 @@ namespace kumi
               && ( !std::same_as<tuple<Ts...>,tuple<Us...>> )
               && _::piecewise_constructible<tuple<Ts&...>, tuple<Us...>>
             )
-    [[nodiscard]] KUMI_ABI explicit( !_::piecewise_convertible<tuple<Ts&...>, tuple<Us...>> ) 
+    [[nodiscard]] KUMI_ABI explicit( !_::piecewise_convertible<tuple<Ts&...>, tuple<Us...>> )  
     constexpr operator tuple<Us...>() 
     {
       return [&]<std::size_t...I>(std::index_sequence<I...>)
@@ -380,37 +375,37 @@ namespace kumi
     //! @return The value returned by f.
     //!
     //==============================================================================================
-    template<typename Function>
-    [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) const&
-    noexcept(noexcept(kumi::apply(KUMI_FWD(f), *this)))
-    -> decltype(kumi::apply(KUMI_FWD(f), *this))
-    { return kumi::apply(KUMI_FWD(f), *this); }
-
-#if !defined(KUMI_DOXYGEN_INVOKED)
-    template<typename Function>
-    [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) &
-    noexcept(noexcept(kumi::apply(KUMI_FWD(f), *this)))
-    -> decltype(kumi::apply(KUMI_FWD(f), *this))
-    {
-      return kumi::apply(KUMI_FWD(f), *this);
-    }
-
-    template<typename Function>
-    [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) const &&noexcept(
-    noexcept(kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this))))
-    -> decltype(kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this)))
-    {
-      return kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this));
-    }
-
-    template<typename Function>
-    [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) &&noexcept(
-    noexcept(kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this))))
-    -> decltype(kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this)))
-    {
-      return kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this));
-    }
-#endif
+//    template<typename Function>
+//    [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) const&
+//    noexcept(noexcept(kumi::apply(KUMI_FWD(f), *this)))
+//    -> decltype(kumi::apply(KUMI_FWD(f), *this))
+//    { return kumi::apply(KUMI_FWD(f), *this); }
+//
+//#if !defined(KUMI_DOXYGEN_INVOKED)
+//    template<typename Function>
+//    [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) &
+//    noexcept(noexcept(kumi::apply(KUMI_FWD(f), *this)))
+//    -> decltype(kumi::apply(KUMI_FWD(f), *this))
+//    {
+//      return kumi::apply(KUMI_FWD(f), *this);
+//    }
+//
+//    template<typename Function>
+//    [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) const &&noexcept(
+//    noexcept(kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this))))
+//    -> decltype(kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this)))
+//    {
+//      return kumi::apply(KUMI_FWD(f), static_cast<tuple const &&>(*this));
+//    }
+//
+//    template<typename Function>
+//    [[deprecated("Use apply() instead")]]KUMI_ABI constexpr auto operator()(Function &&f) &&noexcept(
+//    noexcept(kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this))))
+//    -> decltype(kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this)))
+//    {
+//      return kumi::apply(KUMI_FWD(f), static_cast<tuple &&>(*this));
+//    }
+//#endif
 
     //==============================================================================================
     /// @ingroup tuple
@@ -549,12 +544,10 @@ namespace kumi
   template<product_type Type>
   [[nodiscard]] KUMI_ABI constexpr auto to_ref(Type && t)
   {
-    return apply( [](auto&&... elems)
-                  {
-                    return kumi::forward_as_tuple(KUMI_FWD(elems)...);
-                  }
-                , KUMI_FWD(t)
-                );
+    return [&]<std::size_t...I>(std::index_sequence<I...>)
+    {
+      return kumi::forward_as_tuple(get<I>(KUMI_FWD(t))...);
+    }(std::make_index_sequence<size_v<Type>>{});
   }
 
   //================================================================================================
@@ -736,6 +729,36 @@ namespace kumi
   //================================================================================================
   //! @}
   //================================================================================================
+  
+  namespace _
+  {
+    template<product_type T> requires (!record_type<T>) struct builder<T>
+    {
+      using type = T;
+
+      template<typename... Us> using to = kumi::tuple<Us...>;
+
+      template<typename... Args>
+      static constexpr auto make(Args&&... args) noexcept
+      {
+        return kumi::make_tuple( KUMI_FWD(args)...);
+      } 
+
+      template<typename... Args>
+      static constexpr auto build(Args&&... args) noexcept
+      {
+        return kumi::tuple{ KUMI_FWD(args)...};
+      } 
+    };
+  }
+
+  // As we are lacking a proper mechanism to find the least restrictive subtype, we fallback to 
+  // a specializable trait
+  template<product_type... Ts> requires ( !record_type<Ts> && ...)
+  struct common_product_type<Ts...>
+  {
+    using type = kumi::tuple<>;
+  };
 }
 
 #endif
