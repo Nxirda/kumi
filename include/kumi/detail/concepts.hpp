@@ -88,7 +88,7 @@ namespace kumi::_
   //==============================================================================================
   template<typename Field> struct check_value
   {
-    static consteval bottom get(...);                                   
+    static consteval std::false_type get(...);
   };
 
   template<auto Ref, typename Field>
@@ -135,7 +135,7 @@ namespace kumi::_
   template<typename Ref, typename Field> struct check_type
   {
     static consteval Field  get(Ref) requires std::is_same_v<Field, Ref>;
-    static consteval bottom get(...);
+    static consteval std::false_type get(...);
   };
 
   template<std::size_t I, typename Ref, typename Field> struct get_index
@@ -170,14 +170,14 @@ namespace kumi::_
   get_index_by_type<Ref, std::index_sequence_for<Fields...>,Fields...>::value;
 
   template<typename Ref, typename... Fields>
-  concept can_get_field_by_type = !std::is_same_v<get_field_by_type_t<Ref, Fields...>, bottom>;
+  concept can_get_field_by_type = !std::is_same_v<get_field_by_type_t<Ref, Fields...>, std::false_type>;
 
   //==============================================================================================
   // Helper meta functions to access a field type by name
   //==============================================================================================
   template<std::size_t I, auto Ref, typename Field> struct check_field
   {
-    static consteval bottom   get(...);                                   
+    static consteval std::false_type get(...);
     static consteval invalid  get_index(...);
   };
 
@@ -210,7 +210,7 @@ namespace kumi::_
   get_field_by_value<Ref, std::index_sequence_for<Fields...>, Fields...>::value; 
 
   template<auto Ref, typename... Fields>
-  concept can_get_field_by_value = !std::is_same_v<get_field_by_value_t<Ref, Fields...>, bottom>;
+  concept can_get_field_by_value = !std::is_same_v<get_field_by_value_t<Ref, Fields...>, std::false_type>;
 
   // MSVC workaround for get<>
   // MSVC doesnt SFINAE properly based on NTTP types before requires evaluation

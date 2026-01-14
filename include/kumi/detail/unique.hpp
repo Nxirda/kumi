@@ -15,7 +15,6 @@
 //==================================================================================================
 namespace kumi::_
 {
-  struct bottom;
   using invalid = std::integral_constant<std::size_t, static_cast<std::size_t>(-1)>;
 
   template<typename... Ts> struct type_list{};
@@ -57,4 +56,5 @@ namespace kumi::_
 
   /// Helper used for SFINAE checks.
   inline consteval std::true_type true_fn(...);
+
 }

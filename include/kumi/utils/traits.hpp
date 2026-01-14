@@ -255,7 +255,7 @@ namespace kumi
   };
 
   template<std::size_t I, typename T>
-  requires( is_record_type<std::remove_cvref_t<T>>::value )
+  requires( is_record_type_v<std::remove_cvref_t<T>> )
   struct raw_element<I,T>
   {
     using type = typename element_t<I,T>::type;

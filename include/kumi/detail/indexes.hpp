@@ -9,6 +9,7 @@
 
 #include <iosfwd>
 #include <kumi/detail/binder.hpp>
+#include <kumi/detail/optimized.hpp>
 #include <kumi/utils/traits.hpp>
 #include <kumi/utils/concepts.hpp>
 

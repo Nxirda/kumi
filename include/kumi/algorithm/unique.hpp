@@ -9,55 +9,69 @@
 
 namespace kumi
 {
+  namespace _
+  {
+    template<product_type T> struct uniquer
+    {
+      KUMI_ABI consteval auto operator()() const noexcept
+      {
+        struct { std::size_t count{1}, t[size_v<T>]; } that = {};
+        that.t[0] = 0;
+        auto locate = [&]<std::size_t... I>(std::index_sequence<I...>)
+        {
+          ((  ! std::is_same_v<raw_element_t<I,T>, raw_element_t<I+1,T>> 
+              ? (that.t[that.count++] = I+1) : I), ...);
+        };
+
+        locate(std::make_index_sequence<size_v<T>-1>{});
+        return that;
+ 
+      }
+    };
+
+    template<product_type T> inline constexpr uniquer<T> uniqued{};
+  }
+
   namespace _ 
   {
-    template<typename T> struct make_unique
-    {
-      T acc;
+    template<typename Ints, typename... Ts> struct make_unique;
 
-      template<typename W>
-      KUMI_ABI friend constexpr decltype(auto) operator | (make_unique &&x, make_unique<W> &&y)
-      {
-        constexpr auto value = []<std::size_t...I>(std::index_sequence<I...>)
-        {
-          return (all_uniques_v<W, raw_element_t<I, T>...>);
-        }(std::make_index_sequence<size_v<T>>{});
-        
-        if constexpr ( value ) return [&]<std::size_t...I>(std::index_sequence<I...>)
-        {
-           using res_t = _::builder_make_t<T, element_t<I,T>..., W>;
-           return _::make_unique{ res_t{ get<I>(KUMI_FWD(x.acc))..., KUMI_FWD(y.acc) } };
-        }(std::make_index_sequence<size_v<T>>{});
-        else                   return KUMI_FWD(x);
-      }
+    template <>
+    struct make_unique<std::index_sequence<>> { using type = std::true_type; };
+
+    // To be replaced smartly
+    template<std::size_t... Is, template<class...> class Box, typename... Ts> 
+    struct make_unique<std::index_sequence<Is...>, Box<Ts...>>
+    {      
+      struct impl : _::unique<Ints, Ts>... {};
+
+      template <typename Us>
+      static consteval auto is_set(Us) -> decltype(_::true_fn(static_cast<Us>(all_uniques_inner())));
+      static consteval std::false_type is_set(...);
+
+      
+      //using type = decltype(is_set(std::type_identity<Ts>{}...));
+      
+      //T acc;
+
+      //template<typename W>
+      //KUMI_ABI friend constexpr decltype(auto) operator | (make_unique &&x, make_unique<W> &&y)
+      //{
+      //  constexpr auto value = []<std::size_t...I>(std::index_sequence<I...>)
+      //  {
+      //    return (all_uniques_v<W, raw_element_t<I, T>...>);
+      //  }(std::make_index_sequence<size_v<T>>{});
+      //  
+      //  if constexpr ( value ) return [&]<std::size_t...I>(std::index_sequence<I...>)
+      //  {
+      //     using res_t = _::builder_make_t<T, element_t<I,T>..., W>;
+      //     return _::make_unique{ res_t{ get<I>(KUMI_FWD(x.acc))..., KUMI_FWD(y.acc) } };
+      //  }(std::make_index_sequence<size_v<T>>{});
+      //  else                   return KUMI_FWD(x);
+      //}
     };
 
     template<typename W> make_unique(W && w) -> make_unique<W>;
-
-    struct uniquable
-    {
-      template<product_type T>
-      [[nodiscard]] KUMI_ABI consteval auto operator()(as<T>) const noexcept
-      {
-        struct { std::size_t count{1}, t[size_v<T>]; } that{};
-        that.t[0] = 0; 
-
-        [&]<std::size_t...I>(std::index_sequence<I...>)
-        { 
-          ([&]
-          {
-            constexpr auto L = I;
-            constexpr auto R = I+1;
-            if constexpr ( !std::is_same_v<raw_element_t<L,T>, raw_element_t<R,T>> ) 
-              that.t[that.count++] = R;
-          }(), ...);
-        }(std::make_index_sequence<size_v<T> - 1>{});
-
-        return that;
-      }
-    };
-
-    inline constexpr uniquable uniqued{};
   }
   
   //================================================================================================
@@ -88,7 +102,7 @@ namespace kumi
     if constexpr ( sized_product_type<T,0> ) return KUMI_FWD(t);
     else
     {  
-      constexpr auto pos = _::uniqued(as<T>{});
+      constexpr auto pos = _::uniqued<T>();
       return [&]<std::size_t...I>(std::index_sequence<I...>)
       {
         using ret_t = _::builder_make_t<T, raw_element_t<pos.t[I], T>...>;

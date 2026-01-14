@@ -14,7 +14,7 @@ namespace kumi
     struct zipper_t
     {
       template<std::size_t Size, product_type T>
-      KUMI_ABI constexpr auto operator()(index_t<Size> const&, T && t) const noexcept
+      KUMI_ABI constexpr auto operator()(index_t<Size>, T && t) const noexcept
       {
         if constexpr(sized_product_type<T,0>) return t;
         else

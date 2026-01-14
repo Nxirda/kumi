@@ -123,6 +123,7 @@ namespace kumi
 
   namespace _
   {
+    // This is contains all from raberu but a bit faster imo
     template <typename Ints, typename... Ts> struct matches;
 
     template<> struct matches<std::index_sequence<>> { using type = std::true_type; };

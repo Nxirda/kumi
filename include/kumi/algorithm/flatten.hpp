@@ -181,8 +181,7 @@ namespace kumi
                               if constexpr(product_type<V>)
                                 return flatten_all(KUMI_FWD(v),KUMI_FWD(f));
                               else
-                                return kumi::tuple{ kumi::invoke(KUMI_FWD(f), v)};
-                                //return kumi::tuple{KUMI_FWD(f)(v)};
+                                return tuple{ invoke(KUMI_FWD(f), v)};
                             };
 
                             return cat( v_or_t(KUMI_FWD(m))... );

@@ -9,7 +9,6 @@
 
 namespace kumi
 {
-
   //================================================================================================
   //! @ingroup transforms
   //! @brief Applies the Callable object f on each element of a kumi::product_type. f is applied on the
@@ -43,7 +42,7 @@ namespace kumi
                                         { 
                                           constexpr auto field = get<M::value>(fields); 
                                           kumi::invoke(KUMI_FWD(f)
-                                            ,  get<field>(KUMI_FWD(t))
+                                            , get<field>(KUMI_FWD(t))
                                             , get<field>(KUMI_FWD(ts))...
                                           );
                                         };
