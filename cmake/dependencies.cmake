@@ -40,3 +40,7 @@ if(KUMI_BUILD_TEST)
                           "TTS_QUIET ON"
                 )
 endif()
+
+if(KUMI_BUILD_BENCHMARK)
+    find_package(ctbench REQUIRED)
+endif()

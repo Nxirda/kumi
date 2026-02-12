@@ -10,9 +10,11 @@ project(kumi LANGUAGES CXX)
 option( KUMI_BUILD_TEST             "Build tests using Kumi headers"            ON  )
 option( KUMI_BUILD_STANDALONE_TEST  "Build tests using Kumi standalone header"  OFF )
 option( KUMI_BUILD_DOCUMENTATION    "Build Doxygen for Kumi"                    OFF )
+option( KUMI_BUILD_BENCHMARK        "Build benchmarks for Kumi"                 OFF )
 
 ##======================================================================================================================
 include(${PROJECT_SOURCE_DIR}/cmake/dependencies.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/bench.cmake)
 
 if(KUMI_BUILD_TEST)
   include(${PROJECT_SOURCE_DIR}/cmake/compiler.cmake)
@@ -40,6 +42,7 @@ if(NOT KUMI_QUIET)
   message(STATUS "[${PROJECT_NAME}] - Unit tests              : ${KUMI_BUILD_TEST} (via KUMI_BUILD_TEST)")
   message(STATUS "[${PROJECT_NAME}] - Unit tests (standalone) : ${KUMI_BUILD_STANDALONE_TEST} (via KUMI_BUILD_STANDALONE_TEST)")
   message(STATUS "[${PROJECT_NAME}] - Doxygen                 : ${KUMI_BUILD_DOCUMENTATION} (via KUMI_BUILD_DOCUMENTATION)")
+  message(STATUS "[${PROJECT_NAME}] - Benchmarks              : ${KUMI_BUILD_BENCHMARK} (via KUMI_BUILD_BENCHMARK)")
   set(QUIET_OPTION "")
 else()
   set(QUIET_OPTION "QUIET")
@@ -81,4 +84,12 @@ if(KUMI_BUILD_TEST)
   enable_testing()
   add_custom_target(kumi-unit)
   add_subdirectory(test)
+endif()
+
+##======================================================================================================================
+## Bench setup
+##======================================================================================================================
+if(KUMI_BUILD_BENCHMARK)
+  add_custom_target(kumi-benchmarks)
+  add_subdirectory(bench)
 endif()
