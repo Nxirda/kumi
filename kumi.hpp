@@ -11,11 +11,13 @@ namespace kumi
 }
 #if defined(_MSC_VER)
 #if _MSVC_LANG < 202002L
-#error "KUMI requires C++20 or higher. Use /std:c++20 or higher to enable C++20 features."
+#error "KUMI C++ version error"
+#include "KUMI requires C++20 or higher. Use /std:c++20 or higher to enable C++20 features."
 #endif
 #else
 #if __cplusplus < 202002L
-#error "KUMI requires C++20 or higher. Use -std=c++20 or higher to enable C++20 features."
+#error "KUMI C++ version error"
+#include "KUMI requires C++20 or higher. Use -std=c++20 or higher to enable C++20 features."
 #endif
 #endif
 #define KUMI_FWD(...) static_cast<decltype(__VA_ARGS__)&&>(__VA_ARGS__)
@@ -35,6 +37,11 @@ namespace kumi
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wmissing-braces"
 #endif
+#include <cstddef>
+#include <concepts>
+#include <iosfwd>
+#include <type_traits>
+#include <utility>
 #define FOR_LIST_OF_STRUCTS(DO)                                                                                        \
   DO(1)                                                                                                                \
   DO(2)                                                                                                                \
@@ -147,8 +154,18 @@ namespace kumi
       KUMI_PP_REPEAT(N, KUMI_GET_NAME_LVALUE, I)                                                                       \
     }                                                                                                                  \
   };
-#include <iosfwd>
-#include <utility>
+#if defined(__ANDROID__) || defined(__APPLE__)
+namespace kumi
+{
+  template<typename From, typename To>
+  concept convertible_to = std::is_convertible_v<From, To> && requires { static_cast<To>(std::declval<From>()); };
+}
+#else
+namespace kumi
+{
+  using std::convertible_to;
+}
+#endif
 namespace kumi
 {
   struct str
@@ -230,61 +247,12 @@ namespace kumi
 }
 namespace kumi::_
 {
-  template<typename T> constexpr auto typer() noexcept
-  {
-#if defined(__clang__)
-    constexpr auto pfx = kumi::str{"auto kumi::_::typer() [T = "}.size();
-    constexpr auto sfx = kumi::str{"]"}.size();
-    constexpr auto value = kumi::str{__PRETTY_FUNCTION__, std::integral_constant<std::size_t, pfx>{},
-                                     std::integral_constant<std::size_t, sfx>{}};
-#elif defined(__GNUC__)
-    constexpr auto pfx = kumi::str{"constexpr auto kumi::_::typer() [with T = "}.size();
-    constexpr auto sfx = kumi::str{"]"}.size();
-    constexpr auto value = kumi::str{__PRETTY_FUNCTION__, std::integral_constant<std::size_t, pfx>{},
-                                     std::integral_constant<std::size_t, sfx>{}};
-#elif defined(_MSC_VER)
-    constexpr auto pfx = kumi::str{"auto __cdecl kumi::_::typer<"}.size();
-    constexpr auto sfx = kumi::str{">(void)"}.size();
-    constexpr auto value =
-      kumi::str{__FUNCSIG__, std::integral_constant<std::size_t, pfx>{}, std::integral_constant<std::size_t, sfx>{}};
-#endif
-    return value;
-  }
-}
-#include <iosfwd>
-namespace kumi::_
-{
-  template<typename T> auto make_streamable(T const& e)
-  {
-    if constexpr (requires(std::ostream& os) { os << e; }) return e;
-    else if constexpr (requires { as_streamable(e); }) return as_streamable(e);
-    else return kumi::unknown{};
-  }
-}
-#if defined(__ANDROID__) || defined(__APPLE__)
-#include <type_traits>
-namespace kumi
-{
-  template<typename From, typename To>
-  concept convertible_to = std::is_convertible_v<From, To> && requires { static_cast<To>(std::declval<From>()); };
-}
-#else
-#include <concepts>
-namespace kumi
-{
-  using std::convertible_to;
-}
-#endif
-#include <concepts>
-#include <cstddef>
-#include <utility>
-namespace kumi::_
-{
   template<typename... Ts> struct type_list
   {
   };
   template<auto ID> struct value
   {
+    using type = decltype(ID);
   };
   using invalid = std::integral_constant<std::size_t, static_cast<std::size_t>(-1)>;
   template<typename From, typename To>
@@ -298,16 +266,21 @@ namespace kumi::_
   template<typename T, typename... Args>
   concept implicit_constructible = requires(Args... args) { T{args...}; };
   template<typename T>
-  concept identifier = requires(T const& t) {
-    typename std::remove_cvref_t<T>::tag_type;
-    { std::remove_cvref_t<T>::to_str() };
-  };
+  concept valid_display_name =
+    implicit_constructible<T> &&
+    (!requires { to_str(T{}); } || std::same_as<typename value<to_str(T{})>::type, kumi::str>);
+  template<typename T>
+  concept identifier = requires(T const& t) { typename std::remove_cvref_t<T>::tag_type; };
   template<typename O>
   concept field = requires(O const& o) {
     typename std::remove_cvref_t<O>::type;
     typename std::remove_cvref_t<O>::identifier_type;
     { o(typename std::remove_cvref_t<O>::identifier_type{}) };
     { std::remove_cvref_t<O>::name() };
+  };
+  template<identifier T> struct tag_of
+  {
+    using type = typename std::remove_cvref_t<T>::tag_type;
   };
   template<field T> struct key_of
   {
@@ -317,6 +290,7 @@ namespace kumi::_
   {
     using type = typename std::remove_cvref_t<T>::type;
   };
+  template<identifier T> using tag_of_t = typename tag_of<std::remove_cvref_t<T>>::type;
   template<field T> using key_of_t = typename key_of<std::remove_cvref_t<T>>::type;
   template<field T> using type_of_t = typename type_of<std::remove_cvref_t<T>>::type;
   template<typename From, typename To> struct is_piecewise_constructible : std::false_type
@@ -440,8 +414,8 @@ namespace kumi::_
     static consteval std::false_type get();
     static consteval invalid get_index();
   };
-  template<std::size_t I, typename Ref, field Field>
-  requires(std::is_same_v<Ref, key_of_t<Field>>)
+  template<std::size_t I, identifier Ref, field Field>
+  requires(std::is_same_v<tag_of_t<Ref>, key_of_t<Field>>)
   struct check_field<I, Ref, Field>
   {
     using constant = std::integral_constant<std::size_t, I>;
@@ -467,7 +441,43 @@ namespace kumi::_
   template<typename Ref, typename... Fields>
   concept can_get_field_by_value = !std::is_same_v<get_field_by_value_t<Ref, Fields...>, std::false_type>;
 }
-#include <cstddef>
+namespace kumi::_
+{
+  template<typename T> constexpr auto typer() noexcept
+  {
+#if defined(__clang__)
+    constexpr auto pfx = kumi::str{"auto kumi::_::typer() [T = "}.size();
+    constexpr auto sfx = kumi::str{"]"}.size();
+    constexpr auto value = kumi::str{__PRETTY_FUNCTION__, std::integral_constant<std::size_t, pfx>{},
+                                     std::integral_constant<std::size_t, sfx>{}};
+#elif defined(__GNUC__)
+    constexpr auto pfx = kumi::str{"constexpr auto kumi::_::typer() [with T = "}.size();
+    constexpr auto sfx = kumi::str{"]"}.size();
+    constexpr auto value = kumi::str{__PRETTY_FUNCTION__, std::integral_constant<std::size_t, pfx>{},
+                                     std::integral_constant<std::size_t, sfx>{}};
+#elif defined(_MSC_VER)
+    constexpr auto pfx = kumi::str{"auto __cdecl kumi::_::typer<"}.size();
+    constexpr auto sfx = kumi::str{">(void)"}.size();
+    constexpr auto value =
+      kumi::str{__FUNCSIG__, std::integral_constant<std::size_t, pfx>{}, std::integral_constant<std::size_t, sfx>{}};
+#endif
+    return value;
+  }
+}
+namespace kumi::_
+{
+  template<typename T> auto make_streamable(T const& e)
+  {
+    if constexpr (requires(std::ostream& os) { os << e; }) return e;
+    else if constexpr (requires { as_streamable(e); }) return as_streamable(e);
+    else return kumi::unknown{};
+  }
+  template<valid_display_name T> consteval str make_str(T const& t)
+  {
+    if constexpr (requires { to_str(t); }) return to_str(t);
+    else return typer<std::remove_cvref_t<T>>();
+  }
+}
 namespace kumi::_
 {
   template<std::size_t I, typename T> consteval auto get_key()
@@ -490,8 +500,104 @@ namespace kumi::_
   };
   inline consteval std::true_type true_fn(...);
 }
-#include <cstddef>
-#include <utility>
+namespace kumi
+{
+  template<typename Id, typename T> struct field
+  {
+    using type = T;
+    using identifier_type = Id;
+    using inner_type = std::type_identity<T>;
+    T value;
+    static constexpr auto name() { return _::make_str(Id{}); }
+    KUMI_ABI constexpr T& operator()(identifier_type) & noexcept { return value; }
+    KUMI_ABI constexpr T&& operator()(identifier_type) && noexcept { return static_cast<T&&>(value); }
+    KUMI_ABI constexpr T const& operator()(identifier_type) const& noexcept { return value; }
+    KUMI_ABI constexpr T const&& operator()(identifier_type) const&& noexcept { return static_cast<T const&&>(value); }
+    KUMI_ABI constexpr T& operator()(inner_type) & noexcept { return value; }
+    KUMI_ABI constexpr T&& operator()(inner_type) && noexcept { return static_cast<T&&>(value); }
+    KUMI_ABI constexpr T const& operator()(inner_type) const& noexcept { return value; }
+    KUMI_ABI constexpr T const&& operator()(inner_type) const&& noexcept { return static_cast<T const&&>(value); }
+    template<typename CharT, typename Traits>
+    friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os, field const& w) noexcept
+    {
+      return os << _::make_str(std::remove_cvref_t<Id>{}) << " : " << _::make_streamable(w.value);
+    }
+  };
+  template<typename Id, typename T>
+  requires(std::is_empty_v<T>)
+  struct field<Id, T> : T
+  {
+    using type = T;
+    using identifier_type = Id;
+    using inner_type = std::type_identity<T>;
+    static constexpr auto name() { return _::make_str(Id{}); }
+    KUMI_ABI constexpr T& operator()(identifier_type) & noexcept { return *this; }
+    KUMI_ABI constexpr T&& operator()(identifier_type) && noexcept { return static_cast<T&&>(*this); }
+    KUMI_ABI constexpr T const& operator()(identifier_type) const& noexcept { return *this; }
+    KUMI_ABI constexpr T const&& operator()(identifier_type) const&& noexcept { return static_cast<T const&&>(*this); }
+    KUMI_ABI constexpr T& operator()(inner_type) & noexcept { return *this; }
+    KUMI_ABI constexpr T&& operator()(inner_type) && noexcept { return static_cast<T&&>(*this); }
+    KUMI_ABI constexpr T const& operator()(inner_type) const& noexcept { return *this; }
+    KUMI_ABI constexpr T const&& operator()(inner_type) const&& noexcept { return static_cast<T const&&>(*this); }
+    template<typename CharT, typename Traits>
+    friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os, field const& w) noexcept
+    {
+      return os << _::make_str(std::remove_cvref_t<Id>{}) << " : " << _::make_streamable(w(_::key_of_t<decltype(w)>{}));
+    }
+  };
+  template<typename Id, typename T>
+  requires(!_::valid_display_name<Id>)
+  struct field<Id, T>
+  {
+    field(T&&) = delete;
+    static_assert(_::valid_display_name<Id>, "User defined to_str(...) function is not constexpr");
+  };
+  template<typename T> [[nodiscard]] KUMI_ABI consteval auto name_of() noexcept
+  {
+    if constexpr (_::field<T>) return _::key_of_t<T>{};
+    else return kumi::unknown{};
+  };
+  template<typename T> [[nodiscard]] KUMI_ABI constexpr decltype(auto) field_value_of(T&& t) noexcept
+  {
+    if constexpr (_::field<T>) return (KUMI_FWD(t)(_::key_of_t<T>{}));
+    else return KUMI_FWD(t);
+  };
+  template<_::identifier auto Name, typename T>
+  [[nodiscard]] KUMI_ABI constexpr decltype(auto) capture_field(T&& t) noexcept
+  {
+    return field<decltype(Name), T>{KUMI_FWD(t)};
+  }
+  template<typename U, typename T> [[nodiscard]] KUMI_ABI constexpr decltype(auto) field_cast(T&& t) noexcept
+  {
+    if constexpr (_::field<U>)
+      return field<_::key_of_t<T>, _::type_of_t<U>>{static_cast<_::type_of_t<U>>(KUMI_FWD(t)(_::key_of_t<T>{}))};
+    else if constexpr (!_::field<T>) return static_cast<_::type_of_t<U>>(KUMI_FWD(t));
+    else return field<_::key_of_t<T>, U>{static_cast<U>(KUMI_FWD(t)(_::key_of_t<T>{}))};
+  }
+  namespace result
+  {
+    template<typename T> struct name_of
+    {
+      using type = decltype(kumi::name_of<T>());
+    };
+    template<typename T> struct field_value_of
+    {
+      using type = decltype(kumi::field_value_of(std::declval<T>()));
+    };
+    template<_::identifier auto Name, typename T> struct capture_field
+    {
+      using type = decltype(kumi::capture_field<Name>(std::declval<T>()));
+    };
+    template<typename U, typename T> struct field_cast
+    {
+      using type = decltype(kumi::field_cast<U, T>(std::declval<T>()));
+    };
+    template<typename T> using name_of_t = typename name_of<T>::type;
+    template<typename T> using field_value_of_t = typename field_value_of<T>::type;
+    template<_::identifier auto Name, typename T> using capture_field_t = typename capture_field<Name, T>::type;
+    template<typename U, typename T> using field_cast_t = typename field_cast<U, T>::type;
+  }
+}
 namespace kumi::_
 {
   template<int N, typename T> struct leaf
@@ -555,8 +661,6 @@ namespace kumi::_
   };
   template<typename... Ts> using make_set_t = typename make_set<Ts...>::type;
 }
-#include <cstddef>
-#include <utility>
 namespace kumi::_
 {
   template<typename... Ts> inline constexpr bool no_references = (true && ... && !std::is_reference_v<Ts>);
@@ -647,9 +751,6 @@ namespace kumi
     else return invoke(KUMI_FWD(c), KUMI_FWD(ts)...);
   };
 }
-#include <cstddef>
-#include <type_traits>
-#include <utility>
 namespace kumi
 {
   namespace _
@@ -853,9 +954,6 @@ namespace kumi
   template<typename T> using builder_t = typename builder<T>::type;
   template<typename T, typename... Args> using builder_make_t = typename builder<T>::template to<Args...>;
 }
-#include <cstddef>
-#include <type_traits>
-#include <utility>
 namespace kumi
 {
   namespace _
@@ -972,7 +1070,6 @@ namespace kumi
       }(std::make_index_sequence<size_v<T>>{});
   }
 }
-#include <iosfwd>
 namespace kumi
 {
   struct unit
@@ -1000,97 +1097,6 @@ namespace kumi
 }
 namespace kumi
 {
-  template<concepts::identifier Id, typename T> struct field
-  {
-    using type = T;
-    using identifier_type = Id;
-    using inner_type = std::type_identity<T>;
-    T value;
-    static constexpr auto name() { return Id::to_str(); }
-    KUMI_ABI constexpr T& operator()(identifier_type) & noexcept { return value; }
-    KUMI_ABI constexpr T&& operator()(identifier_type) && noexcept { return static_cast<T&&>(value); }
-    KUMI_ABI constexpr T const& operator()(identifier_type) const& noexcept { return value; }
-    KUMI_ABI constexpr T const&& operator()(identifier_type) const&& noexcept { return static_cast<T const&&>(value); }
-    KUMI_ABI constexpr T& operator()(inner_type) & noexcept { return value; }
-    KUMI_ABI constexpr T&& operator()(inner_type) && noexcept { return static_cast<T&&>(value); }
-    KUMI_ABI constexpr T const& operator()(inner_type) const& noexcept { return value; }
-    KUMI_ABI constexpr T const&& operator()(inner_type) const&& noexcept { return static_cast<T const&&>(value); }
-    template<typename CharT, typename Traits>
-    friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os, field const& w) noexcept
-    {
-      return os << Id{} << " : " << _::make_streamable(w.value);
-    }
-  };
-  template<concepts::identifier Id, typename T>
-  requires(std::is_empty_v<T>)
-  struct field<Id, T> : T
-  {
-    using type = T;
-    using identifier_type = Id;
-    using inner_type = std::type_identity<T>;
-    static constexpr auto name() { return Id::to_str(); }
-    KUMI_ABI constexpr T& operator()(identifier_type) & noexcept { return *this; }
-    KUMI_ABI constexpr T&& operator()(identifier_type) && noexcept { return static_cast<T&&>(*this); }
-    KUMI_ABI constexpr T const& operator()(identifier_type) const& noexcept { return *this; }
-    KUMI_ABI constexpr T const&& operator()(identifier_type) const&& noexcept { return static_cast<T const&&>(*this); }
-    KUMI_ABI constexpr T& operator()(inner_type) & noexcept { return *this; }
-    KUMI_ABI constexpr T&& operator()(inner_type) && noexcept { return static_cast<T&&>(*this); }
-    KUMI_ABI constexpr T const& operator()(inner_type) const& noexcept { return *this; }
-    KUMI_ABI constexpr T const&& operator()(inner_type) const&& noexcept { return static_cast<T const&&>(*this); }
-    template<typename CharT, typename Traits>
-    friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os, field const& w) noexcept
-    {
-      return os << Id{} << " : " << _::make_streamable(w(_::key_of_t<decltype(w)>{}));
-    }
-  };
-  template<typename T> [[nodiscard]] KUMI_ABI constexpr auto name_of(as<T>) noexcept
-  {
-    if constexpr (concepts::field<T>) return _::key_of_t<T>{};
-    else return kumi::unknown{};
-  };
-  template<typename T> [[nodiscard]] KUMI_ABI constexpr decltype(auto) field_value_of(T&& t) noexcept
-  {
-    if constexpr (concepts::field<T>) return (KUMI_FWD(t)(_::key_of_t<T>{}));
-    else return KUMI_FWD(t);
-  };
-  template<concepts::identifier auto Name, typename T>
-  [[nodiscard]] KUMI_ABI constexpr decltype(auto) capture_field(T&& t) noexcept
-  {
-    return field<decltype(Name), T>{KUMI_FWD(t)};
-  }
-  template<typename U, typename T> [[nodiscard]] KUMI_ABI constexpr decltype(auto) field_cast(T&& t) noexcept
-  {
-    if constexpr (concepts::field<U>)
-      return field<_::key_of_t<T>, _::type_of_t<U>>{static_cast<_::type_of_t<U>>(KUMI_FWD(t)(_::key_of_t<T>{}))};
-    else if constexpr (!concepts::field<T>) return static_cast<_::type_of_t<U>>(KUMI_FWD(t));
-    else return field<_::key_of_t<T>, U>{static_cast<U>(KUMI_FWD(t)(_::key_of_t<T>{}))};
-  }
-  namespace result
-  {
-    template<typename T> struct name_of
-    {
-      using type = decltype(kumi::name_of(as<T>{}));
-    };
-    template<typename T> struct field_value_of
-    {
-      using type = decltype(kumi::field_value_of(std::declval<T>()));
-    };
-    template<concepts::identifier auto Name, typename T> struct capture_field
-    {
-      using type = decltype(kumi::capture_field<Name>(std::declval<T>()));
-    };
-    template<typename U, typename T> struct field_cast
-    {
-      using type = decltype(kumi::field_cast<U, T>(std::declval<T>()));
-    };
-    template<typename T> using name_of_t = typename name_of<T>::type;
-    template<typename T> using field_value_of_t = typename field_value_of<T>::type;
-    template<concepts::identifier auto Name, typename T> using capture_field_t = typename capture_field<Name, T>::type;
-    template<typename U, typename T> using field_cast_t = typename field_cast<U, T>::type;
-  }
-}
-namespace kumi
-{
   template<typename T> struct only_t
   {
     template<typename U> static constexpr bool value = std::same_as<T, U>;
@@ -1104,7 +1110,7 @@ namespace kumi
   template<typename ID, typename Check = void> struct identifier;
   template<typename ID> struct identifier<ID, void>
   {
-    using tag_type = identifier<ID>;
+    using tag_type = std::remove_cvref_t<ID>;
     constexpr identifier() noexcept {};
     constexpr identifier(ID const&) noexcept {};
     template<concepts::identifier I> KUMI_ABI friend constexpr auto operator==(identifier const&, I const&)
@@ -1115,22 +1121,17 @@ namespace kumi
     {
       return {KUMI_FWD(v)};
     }
-    static constexpr auto to_str()
-    {
-      using S = std::remove_cvref_t<ID>;
-      if constexpr (requires { S::to_str(); }) return S::to_str();
-      else return _::typer<ID>();
-    }
     template<typename CharT, typename Traits>
     friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os,
                                                          identifier const&) noexcept
     {
-      return os << identifier::to_str();
+      return os << _::make_str(tag_type{});
     }
   };
   template<typename ID, typename Checker> struct identifier
   {
     using tag_type = identifier<ID, Checker>;
+    friend constexpr str to_str(identifier<ID, Checker> const&) { return _::make_str(ID{}); }
     constexpr identifier() noexcept {};
     constexpr identifier([[maybe_unused]] ID const& id, [[maybe_unused]] Checker const& chk) noexcept {};
     template<concepts::identifier I> KUMI_ABI friend constexpr auto operator==(identifier const&, I const&)
@@ -1146,17 +1147,11 @@ namespace kumi
     template<typename T>
     requires(!Checker::template value<T>)
     constexpr field<tag_type, std::unwrap_ref_decay_t<T>> operator=(T&& v) const = delete;
-    static constexpr auto to_str()
-    {
-      using S = std::remove_cvref_t<ID>;
-      if constexpr (requires { S::to_str(); }) return S::to_str();
-      else return _::typer<ID>();
-    }
     template<typename CharT, typename Traits>
     friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os,
-                                                         identifier const&) noexcept
+                                                         identifier const& id) noexcept
     {
-      return os << identifier::to_str();
+      return os << _::make_str(id);
     }
   };
   template<typename ID> identifier(ID const&) -> identifier<ID, void>;
@@ -1164,7 +1159,7 @@ namespace kumi
   template<str ID> struct name
   {
     using tag_type = name<ID>;
-    static constexpr auto to_str() { return ID; }
+    friend constexpr str to_str(name<ID> const&) { return ID; }
     template<kumi::concepts::identifier I> KUMI_ABI friend constexpr auto operator==(name const&, I const&)
     {
       return std::same_as<std::remove_cvref_t<tag_type>, std::remove_cvref_t<I>>;
@@ -1189,7 +1184,6 @@ namespace kumi
     };
   }
 }
-#include <cstddef>
 namespace kumi
 {
   struct numeric_add
@@ -1251,7 +1245,6 @@ namespace kumi
     inline constexpr boolean_xor bit_xor{};
   }
 }
-#include <iosfwd>
 namespace kumi
 {
   template<concepts::indexer... V> struct indexes_t
@@ -1299,7 +1292,6 @@ namespace kumi
     return indexes_t{ts...};
   }
 }
-#include <cstddef>
 namespace kumi
 {
   template<typename U, concepts::product_type T>
@@ -1346,8 +1338,6 @@ namespace kumi
     return []<typename T>(T const&) constexpr { return Pred<T>::value; };
   }
 }
-#include <type_traits>
-#include <utility>
 #if !defined(KUMI_DOXYGEN_INVOKED)
 template<std::size_t I, typename Head, typename... Tail>
 struct std::tuple_element<I, kumi::tuple<Head, Tail...>> : std::tuple_element<I - 1, kumi::tuple<Tail...>>
@@ -1406,8 +1396,6 @@ struct std::basic_common_reference<kumi::tuple<Ts...>, kumi::tuple<Us...>, TQual
 namespace kumi
 {
 }
-#include <iosfwd>
-#include <type_traits>
 namespace kumi
 {
   template<typename... Ts> struct tuple
@@ -1465,34 +1453,31 @@ namespace kumi
     }
     template<concepts::identifier Name>
     requires(concepts::uniquely_named<Ts...> && concepts::contains_field<Name, Ts...>)
-    KUMI_ABI constexpr decltype(auto) operator[](Name const& n) & noexcept
+    KUMI_ABI constexpr decltype(auto) operator[](Name const&) & noexcept
     {
-      return impl(n);
+      return impl(_::tag_of_t<Name>{});
     }
     template<concepts::identifier Name>
-    KUMI_ABI constexpr decltype(auto) operator[](Name const& n) && noexcept
+    KUMI_ABI constexpr decltype(auto) operator[](Name const&) && noexcept
     requires(concepts::uniquely_named<Ts...> && concepts::contains_field<Name, Ts...>)
     {
-      return static_cast<decltype(impl)&&>(impl)(n);
-    }
-    template<concepts::identifier Name>
-    requires(concepts::uniquely_named<Ts...> && concepts::contains_field<Name, Ts...>)
-    KUMI_ABI constexpr decltype(auto) operator[](Name const& n) const&& noexcept
-    {
-      return static_cast<decltype(impl) const&&>(impl)(n);
+      return static_cast<decltype(impl)&&>(impl)(_::tag_of_t<Name>{});
     }
     template<concepts::identifier Name>
     requires(concepts::uniquely_named<Ts...> && concepts::contains_field<Name, Ts...>)
-    KUMI_ABI constexpr decltype(auto) operator[](Name const& n) const& noexcept
+    KUMI_ABI constexpr decltype(auto) operator[](Name const&) const&& noexcept
     {
-      return impl(n);
+      return static_cast<decltype(impl) const&&>(impl)(_::tag_of_t<Name>{});
+    }
+    template<concepts::identifier Name>
+    requires(concepts::uniquely_named<Ts...> && concepts::contains_field<Name, Ts...>)
+    KUMI_ABI constexpr decltype(auto) operator[](Name const&) const& noexcept
+    {
+      return impl(_::tag_of_t<Name>{});
     }
     [[nodiscard]] KUMI_ABI static constexpr auto size() noexcept { return sizeof...(Ts); }
     [[nodiscard]] KUMI_ABI static constexpr bool empty() noexcept { return sizeof...(Ts) == 0; }
-    [[nodiscard]] KUMI_ABI static constexpr auto names() noexcept -> tuple<decltype(name_of(as<Ts>{}))...>
-    {
-      return {name_of(as<Ts>{})...};
-    };
+    [[nodiscard]] KUMI_ABI static constexpr auto names() noexcept { return kumi::tuple{name_of<Ts>()...}; };
     template<typename... Us>
     requires(_::piecewise_convertible<tuple, tuple<Us...>> && (sizeof...(Us) == sizeof...(Ts)) &&
              (!std::same_as<Ts, Us> && ...))
@@ -1589,9 +1574,9 @@ namespace kumi
     {
       os << "( ";
       [&]<std::size_t... I>(std::index_sequence<I...>) {
-        ((os << _::make_streamable(t[index<I>]) << " "), ...);
-      }(std::make_index_sequence<size_v<decltype(t)>>{});
-      os << ')';
+        ((os << _::make_streamable(t[index<I>]) << ", "), ...);
+      }(std::make_index_sequence<size_v<tuple> - 1>{});
+      os << _::make_streamable(t[index<size_v<tuple> - 1>]) << " )";
       return os;
     }
   };
@@ -1824,9 +1809,7 @@ namespace kumi
 }
 namespace kumi
 {
-  template<typename... Ts>
-  requires(concepts::entirely_uniquely_named<Ts...> && concepts::unique_display_name<Ts...>)
-  struct record<Ts...>
+  template<typename... Ts> struct record
   {
     using is_record_type = void;
     using set_t = _::make_set_t<Ts...>;
@@ -1886,27 +1869,27 @@ namespace kumi
     }
     template<concepts::identifier Name>
     requires(concepts::contains_field<Name, Ts...>)
-    KUMI_ABI constexpr decltype(auto) operator[](Name const& n) & noexcept
+    KUMI_ABI constexpr decltype(auto) operator[](Name const&) & noexcept
     {
-      return impl(n);
+      return impl(_::tag_of_t<Name>{});
     }
     template<concepts::identifier Name>
     requires(concepts::contains_field<Name, Ts...>)
-    KUMI_ABI constexpr decltype(auto) operator[](Name const& n) && noexcept
+    KUMI_ABI constexpr decltype(auto) operator[](Name const&) && noexcept
     {
-      return static_cast<decltype(impl)&&>(impl)(n);
+      return static_cast<decltype(impl)&&>(impl)(_::tag_of_t<Name>{});
     }
     template<concepts::identifier Name>
     requires(concepts::contains_field<Name, Ts...>)
-    KUMI_ABI constexpr decltype(auto) operator[](Name const& n) const&& noexcept
+    KUMI_ABI constexpr decltype(auto) operator[](Name const&) const&& noexcept
     {
-      return static_cast<decltype(impl) const&&>(impl)(n);
+      return static_cast<decltype(impl) const&&>(impl)(_::tag_of_t<Name>{});
     }
     template<concepts::identifier Name>
     requires(concepts::contains_field<Name, Ts...>)
-    KUMI_ABI constexpr decltype(auto) operator[](Name const& n) const& noexcept
+    KUMI_ABI constexpr decltype(auto) operator[](Name const&) const& noexcept
     {
-      return impl(n);
+      return impl(_::tag_of_t<Name>{});
     }
     [[nodiscard]] KUMI_ABI static constexpr auto size() noexcept { return sizeof...(Ts); }
     [[nodiscard]] KUMI_ABI static constexpr bool empty() noexcept { return sizeof...(Ts) == 0; }
@@ -1927,21 +1910,21 @@ namespace kumi
     requires(concepts::equivalent<record, record<Us...>> && _::fieldwise_convertible<record, record<Us...>>)
     KUMI_ABI constexpr record& operator=(record<Us...> const& other)
     {
-      ((get<name_of(as<Ts>{})>(*this) = get<name_of(as<Ts>{})>(KUMI_FWD(other))), ...);
+      ((get<name_of<Ts>()>(*this) = get<name_of<Ts>()>(KUMI_FWD(other))), ...);
       return *this;
     }
     template<typename... Us>
     requires(concepts::equivalent<record, record<Us...>> && _::fieldwise_convertible<record, record<Us...>>)
     KUMI_ABI constexpr record& operator=(record<Us...>&& other)
     {
-      ((get<name_of(as<Ts>{})>(*this) = get<name_of(as<Ts>{})>(KUMI_FWD(other))), ...);
+      ((get<name_of<Ts>()>(*this) = get<name_of<Ts>()>(KUMI_FWD(other))), ...);
       return *this;
     }
     template<typename... Us>
     KUMI_ABI friend constexpr auto operator==(record const& self, record<Us...> const& other) noexcept
     requires(concepts::named_equality_comparable<record, record<Us...>>)
     {
-      return ((get<name_of(as<Ts>{})>(self) == get<name_of(as<Ts>{})>(other)) && ...);
+      return ((get<name_of<Ts>()>(self) == get<name_of<Ts>()>(other)) && ...);
     }
     template<typename... Us>
     KUMI_ABI friend constexpr auto operator!=(record const& self, record<Us...> const& other) noexcept
@@ -1953,11 +1936,11 @@ namespace kumi
     friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os,
                                                          record const& t) noexcept
     {
-      os << "( ";
+      os << "{ ";
       [&]<std::size_t... I>(std::index_sequence<I...>) {
-        ((os << t[index<I>] << " "), ...);
-      }(std::make_index_sequence<size_v<decltype(t)>>{});
-      os << ')';
+        ((os << t[index<I>] << ", "), ...);
+      }(std::make_index_sequence<size_v<record> - 1>{});
+      os << t[index<size_v<record> - 1>] << " }";
       return os;
     }
   };
@@ -1985,7 +1968,7 @@ namespace kumi
     template<typename CharT, typename Traits>
     friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os, record<>) noexcept
     {
-      return os << "()";
+      return os << "{}";
     }
   };
   template<typename... Ts>
@@ -2018,7 +2001,7 @@ namespace kumi
   template<concepts::record_type R> [[nodiscard]] KUMI_ABI constexpr auto to_ref(R&& r)
   {
     return [&]<std::size_t... I>(std::index_sequence<I...>) {
-      return kumi::forward_as_record<name_of(as<element_t<I, R>>{})...>(field_value_of(get<I>(KUMI_FWD(r)))...);
+      return kumi::forward_as_record<name_of<element_t<I, R>>()...>(field_value_of(get<I>(KUMI_FWD(r)))...);
     }(std::make_index_sequence<size_v<R>>{});
   }
   template<concepts::record_type Type, typename... Ts>
@@ -2026,7 +2009,7 @@ namespace kumi
   [[nodiscard]] KUMI_ABI constexpr auto from_record(record<Ts...> const& r)
   {
     return [&]<std::size_t... I>(std::index_sequence<I...>) {
-      return Type{get<name_of(as<element_t<I, Type>>{})>(r)...};
+      return Type{get<name_of<element_t<I, Type>>()>(r)...};
     }(std::make_index_sequence<size_v<Type>>());
   }
   template<concepts::record_type Type> [[nodiscard]] KUMI_ABI constexpr auto to_record(Type&& r)
@@ -2034,8 +2017,7 @@ namespace kumi
     if constexpr (concepts::sized_product_type<Type, 0>) return kumi::record{};
     else
       return [&]<std::size_t... I>(std::index_sequence<I...>) {
-        return record{
-          capture_field<name_of(as<element_t<I, Type>>{})>(get<name_of(as<element_t<I, Type>>{})>(KUMI_FWD(r)))...};
+        return record{capture_field<name_of<element_t<I, Type>>()>(get<name_of<element_t<I, Type>>()>(KUMI_FWD(r)))...};
       }(std::make_index_sequence<size_v<Type>>{});
   }
   template<std::size_t I, typename... Ts>
@@ -2171,7 +2153,7 @@ namespace kumi
     if constexpr (concepts::sized_product_type<T, 0>) return tuple{};
     else
       return [&]<std::size_t... I>(std::index_sequence<I...>) {
-        return tuple{name_of(as<element_t<I, T>>{})...};
+        return tuple{name_of<element_t<I, T>>()...};
       }(std::make_index_sequence<size_v<T>>{});
   }
   template<concepts::product_type T> [[nodiscard]] KUMI_ABI constexpr auto values_of(T&& t) noexcept
@@ -2415,7 +2397,7 @@ namespace kumi
   namespace _
   {
     template<typename T, typename... Ts>
-    constexpr bool contains = ((concepts::field<T> && std::invocable<T, Ts>) || ...);
+    constexpr bool contains = ((concepts::field<T> && std::invocable<T, tag_of_t<Ts>>) || ...);
   }
   template<concepts::product_type T, concepts::identifier K>
   KUMI_ABI constexpr bool contains([[maybe_unused]] T&& t, [[maybe_unused]] K const& k) noexcept
@@ -2427,8 +2409,7 @@ namespace kumi
       }(std::make_index_sequence<size_v<T>>{});
     else
       return []<std::size_t... I>(std::index_sequence<I...>) {
-        if constexpr (((concepts::field<element_t<I, T>> && std::invocable<element_t<I, T>, std::remove_cvref_t<K>>) ||
-                       ...))
+        if constexpr (((concepts::field<element_t<I, T>> && std::invocable<element_t<I, T>, _::tag_of_t<K>>) || ...))
           return true;
         else return false;
       }(std::make_index_sequence<size_v<T>>{});
@@ -2557,7 +2538,7 @@ namespace kumi
       constexpr auto fields = members_of(as<Tuple>{});
       auto const invoker = [&]<std::size_t I>(std::integral_constant<std::size_t, I>) {
         constexpr auto field = get<I>(fields);
-        f(field.to_str(), get<field>(KUMI_FWD(t)), get<field>(KUMI_FWD(ts))...);
+        f(_::make_str(field), get<field>(KUMI_FWD(t)), get<field>(KUMI_FWD(ts))...);
       };
       [=]<std::size_t... I>(std::index_sequence<I...>) {
         (invoker(std::integral_constant<std::size_t, I>{}), ...);
@@ -2592,12 +2573,12 @@ namespace kumi
         return [&]<std::size_t... I>(std::index_sequence<I...>) {
           auto v_or_r = [&]<typename V>(V&& v) {
             using FV = kumi::result::field_value_of_t<V>;
-            constexpr auto curr_name = name_of(as<V>{}).to_str();
+            constexpr auto curr_name = _::make_str(name_of<V>());
             if constexpr (concepts::record_type<FV>)
             {
               return [&]<std::size_t... J>(std::index_sequence<J...>) {
                 return record{
-                  (capture_field<name<concatenate_str<curr_name, name_of(as<element_t<J, FV>>{}).to_str()>()>{}>(
+                  (capture_field<name<concatenate_str<curr_name, _::make_str(name_of<element_t<J, FV>>())>()>{}>(
                     field_value_of(get<J>(field_value_of(KUMI_FWD(v))))))...};
               }(std::make_index_sequence<size_v<FV>>{});
             }
@@ -2614,8 +2595,8 @@ namespace kumi
         return [&]<std::size_t... I>(std::index_sequence<I...>) {
           auto v_or_r = [&]<typename V>(V&& v) {
             constexpr auto curr_name = [&] {
-              if constexpr (std::is_same_v<Prefix_type, unit>) return name<name_of(as<V>{}).to_str()>{};
-              else return name<concatenate_str<Prefix.to_str(), name_of(as<V>{}).to_str()>()>{};
+              if constexpr (std::is_same_v<Prefix_type, unit>) return name<_::make_str(name_of<V>())>{};
+              else return name<concatenate_str<_::make_str(Prefix), _::make_str(name_of<V>())>()>{};
             }();
             if constexpr (concepts::record_type<kumi::result::field_value_of_t<V>>)
               return flat<curr_name>(field_value_of(KUMI_FWD(v)));
@@ -2632,8 +2613,8 @@ namespace kumi
           using Prefix_type = std::remove_cvref_t<decltype(Prefix)>;
           auto v_or_r = [&]<typename V>(V&& v) {
             constexpr auto curr_name = [&] {
-              if constexpr (std::is_same_v<Prefix_type, unit>) return name<name_of(as<V>{}).to_str()>{};
-              else return name<concatenate_str<Prefix.to_str(), name_of(as<V>{}).to_str()>()>{};
+              if constexpr (std::is_same_v<Prefix_type, unit>) return name<_::make_str(name_of<V>())>{};
+              else return name<concatenate_str<_::make_str(Prefix), _::make_str(name_of<V>())>()>{};
             }();
             if constexpr (concepts::record_type<kumi::result::field_value_of_t<V>>)
               return flat_map<curr_name>(field_value_of(KUMI_FWD(v)), f);
@@ -2789,8 +2770,8 @@ namespace kumi
     else if constexpr (concepts::record_type<S1>)
     {
       return [&]<std::size_t... I>(std::index_sequence<I...>) {
-        return (_::foldable{sum, invoke(prod, get<name_of(as<element_t<I, S1>>{})>(KUMI_FWD(s1)),
-                                        get<name_of(as<element_t<I, S1>>{})>(KUMI_FWD(s2)))} >>
+        return (_::foldable{sum, invoke(prod, get<name_of<element_t<I, S1>>()>(KUMI_FWD(s1)),
+                                        get<name_of<element_t<I, S1>>()>(KUMI_FWD(s2)))} >>
                 ... >> _::foldable{sum, init})
           .value;
       }(std::make_index_sequence<size<S1>::value>());
@@ -2812,9 +2793,8 @@ namespace kumi
     else if constexpr (concepts::record_type<S1>)
     {
       return [&]<std::size_t... I>(std::index_sequence<I...>) {
-        return (
-          init + ... +
-          (get<name_of(as<element_t<I, S1>>{})>(KUMI_FWD(s1)) * get<name_of(as<element_t<I, S1>>{})>(KUMI_FWD(s2))));
+        return (init + ... +
+                (get<name_of<element_t<I, S1>>()>(KUMI_FWD(s1)) * get<name_of<element_t<I, S1>>()>(KUMI_FWD(s2))));
       }(std::make_index_sequence<size<S1>::value>());
     }
     else
@@ -2861,7 +2841,7 @@ namespace kumi
       auto const call = [&]<std::size_t N, typename... Ts>(index_t<N>, Ts&&... args) {
         if constexpr (concepts::record_type<Tuple>)
         {
-          constexpr auto field = name_of(as<element_t<N, Tuple>>{});
+          constexpr auto field = name_of<element_t<N, Tuple>>();
           return capture_field<field>(invoke(f, get<field>(args)...));
         }
         else return invoke(f, get<N>(KUMI_FWD(args))...);
@@ -2913,8 +2893,8 @@ namespace kumi
     else
     {
       auto const call = [&]<std::size_t N, typename... Ts>(index_t<N>, Ts&&... args) {
-        constexpr auto field = name_of(as<element_t<N, Tuple>>{});
-        return capture_field<field>(invoke(f, field.to_str(), (get<field>(args))...));
+        constexpr auto field = name_of<element_t<N, Tuple>>();
+        return capture_field<field>(invoke(f, _::make_str(field), (get<field>(args))...));
       };
       return [&]<std::size_t... I>(std::index_sequence<I...>) {
         return builder<Tuple>::make(call(index<I>, KUMI_FWD(t0), KUMI_FWD(others)...)...);
