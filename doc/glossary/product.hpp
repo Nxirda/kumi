@@ -3,15 +3,15 @@
 
 @page product Product Types 
 
-@tableofcontents
-
 @section product_construction Product Constructions (The Logic of "AND")
 
 Products represent types where multiple elements exist simultaneously.
 The operands of the product are types. 
 The structure of a product type is determined by the fixed order of the operands. 
 
-@subsection product_type Product Type \f$ (A \times B) \f$
+---
+
+@section product_type Product Type \f$ (A \times B) \f$
 
 A **Product Type** is a compound type formed by combining multiple types. 
 
@@ -46,18 +46,26 @@ A product type follows **List Algebra**.
 + **Order Dependence**: Position is identity. \f$ (A, B) \f$ is structurally distinct from \f$ (B, A) \f$ even though they contain the same underlying types.
 + **Cardinality**: The total state space is the **product** of the states of its components: \f$ Card(A \times B) = Card(A) \times Card(B) \f$.
 
-### Example
-```cpp
-std::tuple<int, float> p; // Ordered product
-```
+@subsection tuple_programming Programming Languages Considerations 
 
-@note A pair is a special case of a tuple that is composed of only two elements.
+Product types can also be composed of homogeneous types, such a tuple does not differ from array types. In most programming
+models homogeneous product types can be efficiently stored via contiguous location in memory without needing to insert 
+padding. By definition, an homogeneous product type can be iterated on by indexing as the gap between two consecutive 
+elements is fixed. This property does not hold for their heterogeneous counterpart
 
-* **Reference** [Wikipedia: Tuple](https://en.wikipedia.org/wiki/Tuple)
+The C++ standard library provides an implementation of a tuple type as well as some special cases. Kumi provides a generic
+yet optimized representation of them. Each type provided in the standard can be represented efficiently.
+
+| STL type            | Kumi                    |
+|:--------------------|:------------------------|
+| std::pair<T1,T2>;   | kumi::tuple<T1,T2>      |
+| std::tuple<Ts...>;  | kumi::tuple<Ts...>      |
+| std::array<T,5>;    | kumi::tuple<T,T,T,T,T>  |
+| std::complex<T>;    | kumi::tuple<T,T>        |
 
 ---
 
-@subsection record_type Record Type \f$ \{label: Type\} \f$  (The Struct)
+@section record_type Record Type \f$ \{label: Type\} \f$  (The Struct)
 
 A **Record Type** identifies its components by a **unique label** rather than a position. 
 
@@ -65,17 +73,43 @@ An instance of a record type is called a struct in many programming languages.
 (Let aside considerations about object oriented progamming, inheritance, etc...)
 
 A **Record Type** is the labeled version of a Product, it can be seen as the product of mathematical sets. 
+Similarily to tuples, it accepts one constructor that takes a variadic number of input that are in this case fields.
+
+Formally it can be written as :
+
+\f$ \{l_1 : x_1, l_2 : x_2, ..., l_n : x_n\} : T_1 x T_2 x ... x T_n \f$
+
+This can be read as : the record is composed of elements of types \f$ T_1 \f$ to \f$ T_n\f$
+with corresponding values \f$ x_1 \f$ to \f$ x_n \f$ that are labeled with \f$ l_1 to l_n \f$.
+
+The corresponding definition in kumi could look like the following:
+```cpp
+using namespace kumi::literals;
+kumi::record a = { "x"_id = 42, "y"_id = 13.37f, "z"_id = 'd' };
+```
+
+To extract values from a record, there are projections that are term constructors.
+A projection (often noted \f$ \pi \f$) is a function that given a product type 
+returns the elements. Formally it is denoted as : 
+
+\f$ \pi_1(x) : T_1, \pi_2(x) : T_2, ..., \pi_n(x) : T_n \f$
+
+In kumi this corresponds to the `get` functions
+```c
+auto a = kumi::get<"x">(kumi::record{ "x"_id = 42, "y"_id = 13.37f, "z"_id = 'd' });
+```
+
 It follows **Set Algebra** on top of **List Algebra**.
++ **Label Identity**: Components are identified by unique **Labels** (names) rather than position.
++ **Permutation**:  Theoretically, a record is a set of field mappings. In many formal definitions, `{x: int, y: float}` 
+                    is isomorphic to `{y: float, x: int}` because the set of labels and their associated types are identical.
++ **Semantic Access**: Access is performed via labels (`u.id`), adding semantic meaning to the structure.
 
 Operation on records are traditionally not structural in the sens that they operate per label, never per 
 element. However, as they are internally represented by a tuple, such operation are permitted. As an example, one
 could "rotate" a record \f$ n \f$ positions to the left. Mathematically this might not make a lot of sens
 whereas for a programmer that has to consider memory representation, this is potentially critical to have.
 
-+ **Label Identity**: Components are identified by unique **Labels** (names) rather than position.
-+ **Permutation**:  Theoretically, a record is a set of field mappings. In many formal definitions, `{x: int, y: float}` 
-                    is isomorphic to `{y: float, x: int}` because the set of labels and their associated types are identical.
-+ **Semantic Access**: Access is performed via labels (`u.id`), adding semantic meaning to the structure.
 
 ### Example 
 ```cpp
@@ -84,9 +118,13 @@ struct User {
     float score;  // Label: score
 };
 ```
-
-* **Reference** [Wikipedia: Record](https://en.wikipedia.org/wiki/Record_(computer_science))
+---
 
 [In the next page](@ref sum), we will see the duals of product types which are called sum types.
+
+---
+
+* **Reference** [Wikipedia: Tuple](https://en.wikipedia.org/wiki/Tuple)
+* **Reference** [Wikipedia: Record](https://en.wikipedia.org/wiki/Record_(computer_science))
 
 **/
