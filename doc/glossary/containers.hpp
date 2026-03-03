@@ -38,5 +38,6 @@ struct Box {
 };
 
 Box<int> instance; // F(int)
+```
 
 **/
